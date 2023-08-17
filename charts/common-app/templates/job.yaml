@@ -1,0 +1,14 @@
+{{- if and (.Values.job.enabled) (not .Values.job.cron.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  labels: {{- include "common-app.labels" . | nindent 4 }}
+    {{- with .Values.job.Labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.job.jobAnnotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec: {{ include "common-app.jobSpec" . | nindent 2 }}
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if and (.Values.app.enabled) (.Values.app.podDisruptionBudget.enabled) }}
+{{- if and (.Values.app.podDisruptionBudget.minAvailable) (.Values.app.podDisruptionBudget.maxUnavailable) }}
+{{- fail ".Values.app.podDisruptionBudget cannot have both of 'minAvailable' and 'maxUnavailable' being set" }}
+{{- end -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "common-app.labels" . | nindent 4 }}
+  {{- with .Values.app.podDisruptionBudget.labels }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.app.podDisruptionBudget.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.app.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.app.podDisruptionBudget.minAvailable }}
+  {{- end  }}
+  {{- if .Values.app.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.app.podDisruptionBudget.maxUnavailable }}
+  {{- end  }}
+  selector:
+    matchLabels: {{- include "common-app.podSelectorLabels" . | nindent 6 }}
+{{- end }}

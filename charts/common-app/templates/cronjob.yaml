@@ -1,0 +1,35 @@
+{{- if and (.Values.job.enabled) (.Values.job.cron.enabled) }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  labels: {{- include "common-app.labels" . | nindent 4 }}
+    {{- with .Values.job.cron.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.job.cron.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  concurrencyPolicy: {{ .Values.job.cron.concurrencyPolicy }}
+  {{- if .Values.job.cron.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ .Values.job.cron.startingDeadlineSeconds }}
+  {{- end }}
+  schedule: {{ .Values.job.cron.schedule | quote }}
+  suspend: {{ .Values.job.cron.suspend }}
+
+  {{- if semverCompare ">=1.25-0" .Capabilities.KubeVersion.GitVersion }}
+  timeZone: {{ .Values.job.cron.timeZone }}
+  {{ end -}}
+
+  jobTemplate:
+    metadata:
+      labels: {{- include "common-app.labels" . | nindent 8 }}
+        {{- with .Values.job.Labels }}
+        {{- toYaml . | indent 8 }}
+        {{- end }}
+      {{- with .Values.job.jobAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec: {{- include "common-app.jobSpec" . | nindent 6 }}
+{{- end }}

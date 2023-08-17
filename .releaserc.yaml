@@ -1,0 +1,14 @@
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/changelog"
+  - [
+      "@semantic-release/exec",
+      {
+        generateNotesCmd: "echo ${nextRelease.version} > VERSION && git add Chart.yaml README.md VERSION",
+      },
+    ]
+  - "@semantic-release/git"
+  - "@semantic-release/github"
+branches:
+  - main

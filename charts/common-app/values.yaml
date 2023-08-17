@@ -1,0 +1,386 @@
+# nameOverride -- defines as a release-related resource name
+nameOverride: ""
+
+ownerReference:
+  # ownerReference.domain -- specifies the application belong to which product domain
+  domain: "common"
+  # ownerReference.team -- specifies the application belong to which team
+  team: "core"
+
+global:
+  # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
+  imagePullSecrets: []
+  #   - name: idnic-gitlab-cred
+
+  image:
+    # global.image.repository -- specifies which image container registry being used
+    repository: registry.gitlab.com/idnic/kadabra-worker/web
+    # global.image.pullPolicy -- specifies what policy for the image pull
+    pullPolicy: IfNotPresent
+    # global.image.tag -- specifies which image container version being used
+    tag: ""
+
+  # global.channel -- specifies application deployment channel (supported values: `stable` and `canary`)
+  channel: stable
+
+  # global.managedBy -- mark the manager of the resource, default to 'Helm'
+  managedBy: ""
+
+app:
+  # app.enabled -- specifies whether to create Deployment object
+  enabled: true
+
+  # app.replicas -- specifies the default number of replica sizes, it will be ignored if app.autoscaling.enabled is true
+  replicas: 1
+
+  # app.command -- specifies application container commands
+  command: []
+
+  # app.args -- specifies application container args
+  args: []
+
+  # app.volumeMounts -- specifies mount point from list of extra volumes attached to the application
+  volumeMounts: []
+  #  - name: shared-volume
+  #    mountPath: /path/to/shared-volume
+
+  # app.containerPorts -- specifies list of application container ports
+  containerPorts: {}
+  #   http:
+  #     port: 8089
+  #     protocol: TCP
+
+  # app.deploymentLabels -- additional labels attached to the deployment
+  deploymentLabels: {}
+
+  # app.deploymentAnnotations -- additional annotations attached to the deployment
+  deploymentAnnotations: {}
+
+  livenessProbe:
+    # app.livenessProbe.enabled -- specifies whether pod liveness probe being created or not
+    enabled: false
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    # exec:
+    #   command:
+    #     - podcli
+    #     - check
+    #     - http
+    #     - localhost:9898/readyz
+    # app.livenessProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
+    failureThreshold: 3
+    # app.livenessProbe.initialDelaySeconds -- Number of seconds after the container has started before liveness probes are initiated.
+    initialDelaySeconds: 10
+    # app.livenessProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
+    periodSeconds: 10
+    # app.livenessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1
+    successThreshold: 1
+    # app.livenessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
+    timeoutSeconds: 1
+
+  readinessProbe:
+    # app.readinessProbe.enabled -- specifies whether pod readiness probe being created or not
+    enabled: false
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    # exec:
+    #   command:
+    #     - podcli
+    #     - check
+    #     - http
+    #     - localhost:9898/readyz
+    # app.readinessProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
+    failureThreshold: 3
+    # app.readinessProbe.initialDelaySeconds -- Number of seconds after the container has started before liveness probes are initiated.
+    initialDelaySeconds: 10
+    # app.readinessProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
+    periodSeconds: 10
+    # app.readinessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1
+    successThreshold: 1
+    # app.readinessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
+    timeoutSeconds: 1
+
+  service:
+    # app.service.enabled -- specifies whether to expose the application through the Kubernetes Service
+    enabled: true
+
+    # app.service.annotations -- additional annotations attached to the Service
+    annotations: {}
+
+    # app.service.labels -- additional labels attached to the Service
+    labels: {}
+
+    # app.service.type -- the Kubernetes Service's type, (supported values: `ClusterIP`, `LoadBalancer`)
+    type: ClusterIP
+
+    # app.service.ports -- specifies list of Kubernetes Service ports being exposed
+    ports:
+      # app.service.ports.http -- the Service's named port
+      http:
+        # app.service.ports.http.port -- the Service's port, recommended to always use port 80
+        port: 80
+        # app.service.ports.http.protocol -- the Service's protocol
+        protocol: TCP
+        # app.service.ports.http.targetPort -- the Pod target port, it defaults to the service's named port
+        targetPort: 0
+
+  ingress:
+    # app.ingress.enabled -- specifies whether to expose the application through the Kubernetes Ingress
+    enabled: false
+    # app.ingress.ingressClassName -- specifies an ingress class name for the ingress
+    ingressClassName: "nginx"
+    # app.ingress.annotations -- additional annotations attached to the ingress
+    annotations: {}
+    #   kubernetes.io/ingress.class: nginx
+    # app.ingress.labels -- additional labels attached to the ingress
+    labels: {}
+    # app.ingress.host -- specifies the host for the ingress
+    host: ""
+    # app.ingress.path -- specifies which path for the ingress
+    path: "/"
+    # app.ingress.pathType -- specifies path type for the ingress
+    pathType: "Prefix"
+    tls:
+      # app.ingress.tls.enabled -- whether enable tls for the ingress
+      enabled: false
+      # app.ingress.tls.secretName -- specifies which secret for the tls on the ingress
+      secretName: ""
+
+  # app.rollingUpdate -- control how rolling update is performed during the deployment
+  rollingUpdate:
+    # app.rollingUpdate.maxSurge -- specifies the maximum number of Pods that can be created over the desired number of Pods.
+    maxSurge: 30%
+    # app.rollingUpdate.maxUnavailable -- specifies the maximum number of Pods that can be unavailable during the update process
+    maxUnavailable: 0
+
+  # app.resources -- specifies resource size of the application container
+  resources: {}
+  #   limits:
+  #     cpu: 100m
+  #     memory: 90Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 90Mi
+
+  autoscaling:
+    # app.autoscaling.enabled -- whether to enable autoscaling (Horizontal Pod Autoscaler) or not
+    enabled: false
+
+    # app.autoscaling.targetCPUUtilizationPercentage -- target CPU utilization in percent
+    targetCPUUtilizationPercentage: 70
+
+    # app.autoscaling.targetMemoryUtilizationPercentage -- target memory utilization in percent
+    targetMemoryUtilizationPercentage: 70
+
+    # app.autoscaling.minReplicas -- the minimum number of replica for Horizontal Pod Autoscaler
+    minReplicas: 1
+
+    # app.autoscaling.maxReplicas -- the maximum number of replica for Horizontal Pod Autoscaler
+    maxReplicas: 3
+
+    # app.autoscaling.annotations -- additional annotations attached to the Horizontal Pod Autoscaler
+    annotations: {}
+
+    # app.autoscaling.labels -- additional labels attached to the Horizontal Pod Autoscaler
+    labels: {}
+
+  podDisruptionBudget:
+    # app.podDisruptionBudget.enabled -- whether to enable Pod Disruption Budget or not
+    enabled: false
+
+    # app.podDisruptionBudget.minAvailable -- minimum percentage/number of the available pods during disruption
+    minAvailable: 0
+
+    # app.podDisruptionBudget.maxUnavailable -- maximum percentage/number of the unavailable pods during disruption
+    maxUnavailable: 25%
+
+    # app.podDisruptionBudget.annotations -- additional annotations attached to the Pod Disruption Budget
+    annotations: {}
+
+    # app.podDisruptionBudget.labels -- additional labels attached to the Pod Disruption Budget
+    labels: {}
+
+job:
+  # job.enabled -- specifies whether to create Job object
+  enabled: false
+
+  # job.resources -- specifies resource size of the job container
+  resources:
+    {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 90Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 90Mi
+
+  # job.command -- specifies list of job's container commands
+  command: []
+
+  # job.args -- specifies list of job's container args
+  args: []
+
+  # job.initContainers -- specifies list of initContainers for the job's container
+  initContainers: []
+  #  - name: download-kubectl
+  #    image: alpine:3
+  #    command: [sh, -c]
+  #    args:
+  #      - wget -q "https://storage.googleapis.com/kubernetes-release/release/v1.27.4/bin/linux/amd64/kubectl" -O /shared/bin/kubectl &&
+  #        chmod +x /shared/bin/kubectl
+  #    volumeMounts:
+  #      - mountPath: /shared
+  #        name: shared-volume
+
+  # job.volumeMounts -- specifies mount point from list of extra volumes attached to the application
+  volumeMounts: []
+  #  - name: shared-volume
+  #    mountPath: /shared
+
+  # job.activeDeadlineSeconds -- specifies the duration in seconds relative to the startTime that the job
+  #  may be continuously active before the system tries to terminate it
+  activeDeadlineSeconds: 0
+
+  # job.backoffLimit -- specifies the number of retries before marking this job failed
+  backoffLimit: 6
+
+  # job.completionMode -- completionMode specifies how Pod completions are tracked.
+  completionMode: NonIndexed
+
+  # job.completions -- specifies the desired number of successfully finished pods the job should
+  #  be run with
+  completions: 1
+
+  # job.parallelism -- specifies the maximum desired number of pods the job should run at any
+  # given time
+  parallelism: 1
+
+  # job.ttlSecondAfterFinished -- define the lifetime of a Job that has finished execution.
+  # If set, the job will be automatically deleted after Job finished (either Completed or Failed) in defined seconds.
+  ttlSecondAfterFinished: null
+
+  # job.jobAnnotations -- additional annotations attached to the Job
+  jobAnnotations: {}
+
+  # job.jobLabels -- additional labels attached to the Job
+  jobLabels: {}
+
+  cron:
+    # job.cron.enabled -- specifies whether to create CronJob object instead of Job
+    enabled: false
+
+    # job.cron.suspend -- decide whether the cron job is suspended for a while
+    suspend: false
+
+    # job.cron.schedule -- the cron schedule
+    schedule: ""
+
+    # job.cron.timeZone -- the time zone name for the given cron schedule
+    timeZone: "UTC"
+
+    # job.cron.concurrencyPolicy -- specifies how to treat concurrent executions of a Job, default to Allow
+    # please refer to https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy
+    concurrencyPolicy: Allow
+
+    # job.cron.startingDeadlineSeconds -- optional deadline in seconds for starting the job if it misses scheduled
+    # time for any reason.
+    startingDeadlineSeconds: 0
+
+    # job.cron.annotations -- additional annotations attached to the CronJob
+    annotations: {}
+    # job.cron.labels -- additional labels attached to the CronJob
+    labels: {}
+
+# nodeSelector -- describes which node must be used for the pod
+nodeSelector: {}
+
+# tolerations -- describes which toleration used for the pod to specify target node
+tolerations: []
+#  - key: "key"
+#    operator: "Equal|Exists"
+#    value: "value"
+#    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+# topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+topologySpreadConstraints: []
+
+# affinity -- specifies pod affinity rules
+affinity:
+  # affinity.nodeAffinity -- specifies node affinity rule
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #       - matchExpressions:
+  #           - key: kubernetes.io/os
+  #             operator: In
+  #             values:
+  #               - linux
+  #   preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 1
+  #       preference:
+  #         matchExpressions:
+  #           - key: label-1
+  #             operator: In
+  #             values:
+  #               - key-1
+
+  # affinity.podAffinity -- specifies pod affinity rule
+  # podAffinity:
+  #   preferredDuringSchedulingIgnoredDuringExecution:
+  #   - weight: 100
+  #     podAffinityTerm:
+  #       labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - helloworld
+  #       topologyKey: kubernetes.io/hostname
+
+  # affinity.podAntiAffinity -- specifies pod anti affinity rules, weight is in the range 1-100
+  # podAntiAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #   - labelSelector:
+  #       matchExpressions:
+  #       - key: app
+  #         operator: In
+  #         values:
+  #         - helloworld
+  #     topologyKey: "kubernetes.io/hostname"
+
+# env -- pod customized environment variable injected to the application container
+env: []
+#   - name:
+#     value:
+
+# envFrom -- pod customized environment variable from selected reference to be injected to the application container
+envFrom: []
+#   - secretRef:
+#       name: secret
+#   - configMapRef:
+#       name: configmap
+
+# podLabels -- additional labels attached to the pods
+podLabels: {}
+
+# podAnnotations -- additional annotations attached to the pods
+podAnnotations: {}
+
+# podLastRestart -- the value that intend for restarting the pod
+podLastRestart: 00000
+
+# extraVolumes -- specifies a list of extra volumes to be attached to the pod
+extraVolumes: []
+#   - name: shared-volume
+#     emptyDir: {}
+
+# securityContext -- specifies security context applied to the pod
+securityContext: {}
+#   runAsUser: 1000
+#   runAsGroup: 3000
+#   fsGroup: 2000
+
+# terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+terminationGracePeriodSeconds: 30

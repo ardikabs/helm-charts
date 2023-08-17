@@ -1,0 +1,44 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+## Features
+
+* Supported use cases:
+  1. Stateless Application
+  2. A Long-Running process, such as a Worker which intended to be functioning without being accessed.
+  3. A Cron Job or One-Time-Execution application (e.g., Job).
+* Configurable CPU and Memory resource request and limit
+* Several ways for exposing application through Kubernetes `Service` and/or Kubernetes `Ingress` object.
+* Support with static replication size as well as Horizontal Pod Autoscaller (HPA).
+* Configurable Pod Disruption Budget (PDB).
+* Configurable Pod Tolerations.
+* Configurable Pod Affinity.
+* Configurable Pod Topology Spread Constraint.
+* Configurable Pod Security Context.
+* And many more.
+
+## Additional Information
+
+* We highly encourage to define the `commands` and `args` for the application container explicitly. This recommendation holds true even if you plan to rely on the `CMD` or `ENTRYPOINT` instruction that you've previously specified in your Dockerfile.
+* For stateless application, this chart is designed to cater to the canary deployment model. Within this chart, we denote this model as the deployment *"channel"*. The supported channels are `stable` and `canary`. Under the `stable` channel, the release will introduce two distinct kinds of Kubernetes Services. The first type is a generic service, linked to the Pod containing the `app.kubernetes.io/name` label. The second type, suffixed with channel type, corresponds to the Kubernetes Service associated with the channel's Pod through the `app.kubernetes.io/channel` label. Conversely, in the `canary` channel, only the "channel-suffixed" Kubernetes Service is introduced.
+  > For instance, consider a release named `podinfo` deployed under the `stable` channel within the `foo` namespace. The release will be accessible via both `podinfo.foo.svc.cluster.local` (generic) and `podinfo-stable.foo.svc.cluster.local` (stable channel). Once the `podinfo` release also enable `canary` deployment, the access would also extend for specific channel access in this case `podinfo-canary.foo.svc.cluster.local` (canary channel). As a result, the release will have three kinds of accessible endpoint, a generic endpoint that can access both channels, a stable endpoint, and a canary endpoint.
+
+{{ template "chart.homepageLine" . }}
+
+## Installing the Chart
+
+To install the chart with the release name `podinfo`:
+
+```console
+$ helm repo add ardikabs https://charts.ardikabs.com
+$ helm install podinfo ardikabs/{{ template "chart.name" . }}
+```
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.maintainersSection" . }}
