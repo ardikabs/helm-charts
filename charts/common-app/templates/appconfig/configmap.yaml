@@ -1,0 +1,19 @@
+{{- $root := .Values.configmap -}}
+{{- if $root.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common-app.name" . }}
+  labels: {{- include "common-app.labels" . | nindent 4 }}
+    {{- with $root.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $root.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespace: {{ .Release.Namespace }}
+data:
+  {{- range $key, $value := $root.data }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end -}}

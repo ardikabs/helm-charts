@@ -1,16 +1,14 @@
-# nameOverride -- defines as a release-related resource name
-nameOverride: ""
-
-ownerReference:
-  # ownerReference.domain -- specifies the application belong to which product domain
+# labels -- specifies a reserved labels attached to all objects used in the release
+labels:
+  # labels.domain -- specifies the application belong to which product domain
   domain: "common"
-  # ownerReference.team -- specifies the application belong to which team
+  # labels.team -- specifies the application belong to which team
   team: "core"
 
 global:
   # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
   imagePullSecrets: []
-  #   - name: idnic-gitlab-cred
+  #   - name: github-ghcr-reader
 
   image:
     # global.image.repository -- specifies which image container registry being used
@@ -26,6 +24,31 @@ global:
   # global.managedBy -- mark the manager of the resource, default to 'Helm'
   managedBy: ""
 
+  serviceAccount:
+    # global.serviceAccount.create -- specifies whether to create a service account or not for the Pod
+    create: false
+
+    # global.serviceAccount.createToken -- specifies whether to create non-expired token for the service account
+    createToken: false
+
+    # global.serviceAccount.name -- specifies the existing service account name
+    name: ""
+
+    # global.serviceAccount.additionalRoles -- additional roles specification to add to service account access
+    additionalRoles:
+      - apiGroups:
+          - ""
+        resources:
+          - secrets
+          - configmaps
+        verbs:
+          - get
+          - list
+          - watch
+
+    # global.serviceAccount.additionalClusterRoles -- additional cluster roles specification to add to service account access
+    additionalClusterRoles: []
+
 app:
   # app.enabled -- specifies whether to create Deployment object
   enabled: true
@@ -39,8 +62,8 @@ app:
   # app.args -- specifies application container args
   args: []
 
-  # app.volumeMounts -- specifies mount point from list of extra volumes attached to the application
-  volumeMounts: []
+  # app.extraVolumeMounts -- specifies mount point from list of extra volumes attached to the application
+  extraVolumeMounts: []
   #  - name: shared-volume
   #    mountPath: /path/to/shared-volume
 
@@ -49,6 +72,9 @@ app:
   #   http:
   #     port: 8089
   #     protocol: TCP
+
+  # app.minReadySeconds --  minimum number of seconds for which a newly created pod should be ready, defaults to 0.
+  minReadySeconds: 0
 
   # app.deploymentLabels -- additional labels attached to the deployment
   deploymentLabels: {}
@@ -202,19 +228,113 @@ app:
     # app.podDisruptionBudget.labels -- additional labels attached to the Pod Disruption Budget
     labels: {}
 
+  # app.nodeSelector -- describes which node must be used for the application pod
+  nodeSelector: {}
+
+  # app.tolerations -- describes which toleration used for the application pod to specify target node
+  tolerations: []
+  #  - key: "key"
+  #    operator: "Equal|Exists"
+  #    value: "value"
+  #    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+  # app.topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+  topologySpreadConstraints: []
+
+  # app.affinity -- specifies pod affinity rules
+  affinity:
+    # app.affinity.nodeAffinity -- specifies node affinity rule
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #       - matchExpressions:
+    #           - key: kubernetes.io/os
+    #             operator: In
+    #             values:
+    #               - linux
+    #   preferredDuringSchedulingIgnoredDuringExecution:
+    #     - weight: 1
+    #       preference:
+    #         matchExpressions:
+    #           - key: label-1
+    #             operator: In
+    #             values:
+    #               - key-1
+
+    # app.affinity.podAffinity -- specifies pod affinity rule
+    # podAffinity:
+    #   preferredDuringSchedulingIgnoredDuringExecution:
+    #   - weight: 100
+    #     podAffinityTerm:
+    #       labelSelector:
+    #         matchExpressions:
+    #         - key: app
+    #           operator: In
+    #           values:
+    #           - helloworld
+    #       topologyKey: kubernetes.io/hostname
+
+    # app.affinity.podAntiAffinity -- specifies pod anti affinity rules, weight is in the range 1-100
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #   - labelSelector:
+    #       matchExpressions:
+    #       - key: app
+    #         operator: In
+    #         values:
+    #         - helloworld
+    #     topologyKey: "kubernetes.io/hostname"
+
+  # app.env -- pod customized environment variable injected to the application container
+  env: []
+  #   - name:
+  #     value:
+
+  # app.envFrom -- pod customized environment variable from selected reference to be injected to the application container
+  envFrom: []
+  #   - secretRef:
+  #       name: secret
+  #   - configMapRef:
+  #       name: configmap
+
+  # app.podLabels -- additional labels attached to the pods
+  podLabels: {}
+
+  # app.podAnnotations -- additional annotations attached to the pods
+  podAnnotations: {}
+
+  # app.podLastRestart -- the value that intend for restarting the pod
+  podLastRestart: 00000
+
+  # app.extraVolumes -- specifies a list of extra volumes to be attached to the pod
+  extraVolumes: []
+  #   - name: shared-volume
+  #     emptyDir: {}
+
+  # app.securityContext -- specifies security context applied to the pod
+  securityContext: {}
+  #   runAsUser: 1000
+  #   runAsGroup: 3000
+  #   fsGroup: 2000
+
+  # app.terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
+
 job:
   # job.enabled -- specifies whether to create Job object
   enabled: false
 
+  # job.restartPolicy -- specifies the job's Pod restart policy
+  restartPolicy: OnFailure
+
   # job.resources -- specifies resource size of the job container
-  resources:
-    {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 90Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 90Mi
+  resources: {}
+  #   limits:
+  #     cpu: 100m
+  #     memory: 90Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 90Mi
 
   # job.command -- specifies list of job's container commands
   command: []
@@ -234,8 +354,8 @@ job:
   #      - mountPath: /shared
   #        name: shared-volume
 
-  # job.volumeMounts -- specifies mount point from list of extra volumes attached to the application
-  volumeMounts: []
+  # job.extraVolumeMounts -- specifies mount point from list of extra volumes attached to the application
+  extraVolumeMounts: []
   #  - name: shared-volume
   #    mountPath: /shared
 
@@ -293,94 +413,162 @@ job:
     # job.cron.labels -- additional labels attached to the CronJob
     labels: {}
 
-# nodeSelector -- describes which node must be used for the pod
-nodeSelector: {}
+  # job.nodeSelector -- describes which node must be used for the job pod
+  nodeSelector: {}
 
-# tolerations -- describes which toleration used for the pod to specify target node
-tolerations: []
-#  - key: "key"
-#    operator: "Equal|Exists"
-#    value: "value"
-#    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  # job.tolerations -- describes which toleration used for the job pod to specify target node
+  tolerations: []
+  #  - key: "key"
+  #    operator: "Equal|Exists"
+  #    value: "value"
+  #    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
-# topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
-topologySpreadConstraints: []
+  # job.topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+  topologySpreadConstraints: []
 
-# affinity -- specifies pod affinity rules
-affinity:
-  # affinity.nodeAffinity -- specifies node affinity rule
-  # nodeAffinity:
-  #   requiredDuringSchedulingIgnoredDuringExecution:
-  #     nodeSelectorTerms:
-  #       - matchExpressions:
-  #           - key: kubernetes.io/os
-  #             operator: In
-  #             values:
-  #               - linux
-  #   preferredDuringSchedulingIgnoredDuringExecution:
-  #     - weight: 1
-  #       preference:
-  #         matchExpressions:
-  #           - key: label-1
-  #             operator: In
-  #             values:
-  #               - key-1
+  # job.affinity -- specifies job's pod affinity rules
+  affinity:
+    # job.affinity.nodeAffinity -- specifies node affinity rule
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #       - matchExpressions:
+    #           - key: kubernetes.io/os
+    #             operator: In
+    #             values:
+    #               - linux
+    #   preferredDuringSchedulingIgnoredDuringExecution:
+    #     - weight: 1
+    #       preference:
+    #         matchExpressions:
+    #           - key: label-1
+    #             operator: In
+    #             values:
+    #               - key-1
 
-  # affinity.podAffinity -- specifies pod affinity rule
-  # podAffinity:
-  #   preferredDuringSchedulingIgnoredDuringExecution:
-  #   - weight: 100
-  #     podAffinityTerm:
-  #       labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - helloworld
-  #       topologyKey: kubernetes.io/hostname
+    # job.affinity.podAffinity -- specifies pod affinity rule
+    # podAffinity:
+    #   preferredDuringSchedulingIgnoredDuringExecution:
+    #   - weight: 100
+    #     podAffinityTerm:
+    #       labelSelector:
+    #         matchExpressions:
+    #         - key: app
+    #           operator: In
+    #           values:
+    #           - helloworld
+    #       topologyKey: kubernetes.io/hostname
 
-  # affinity.podAntiAffinity -- specifies pod anti affinity rules, weight is in the range 1-100
-  # podAntiAffinity:
-  #   requiredDuringSchedulingIgnoredDuringExecution:
-  #   - labelSelector:
-  #       matchExpressions:
-  #       - key: app
-  #         operator: In
-  #         values:
-  #         - helloworld
-  #     topologyKey: "kubernetes.io/hostname"
+    # job.affinity.podAntiAffinity -- specifies pod anti affinity rules, weight is in the range 1-100
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #   - labelSelector:
+    #       matchExpressions:
+    #       - key: app
+    #         operator: In
+    #         values:
+    #         - helloworld
+    #     topologyKey: "kubernetes.io/hostname"
 
-# env -- pod customized environment variable injected to the application container
-env: []
-#   - name:
-#     value:
+  # job.env -- pod customized environment variable injected to the application container
+  env: []
+  #   - name:
+  #     value:
 
-# envFrom -- pod customized environment variable from selected reference to be injected to the application container
-envFrom: []
-#   - secretRef:
-#       name: secret
-#   - configMapRef:
-#       name: configmap
+  # job.envFrom -- pod customized environment variable from selected reference to be injected to the application container
+  envFrom: []
+  #   - secretRef:
+  #       name: secret
+  #   - configMapRef:
+  #       name: configmap
 
-# podLabels -- additional labels attached to the pods
-podLabels: {}
+  # job.podLabels -- additional labels attached to the pods
+  podLabels: {}
 
-# podAnnotations -- additional annotations attached to the pods
-podAnnotations: {}
+  # job.podAnnotations -- additional annotations attached to the pods
+  podAnnotations: {}
 
-# podLastRestart -- the value that intend for restarting the pod
-podLastRestart: 00000
+  # job.extraVolumes -- specifies a list of extra volumes to be attached to the pod
+  extraVolumes: []
+  #   - name: shared-volume
+  #     emptyDir: {}
 
-# extraVolumes -- specifies a list of extra volumes to be attached to the pod
-extraVolumes: []
-#   - name: shared-volume
-#     emptyDir: {}
+  # job.securityContext -- specifies security context applied to the pod
+  securityContext: {}
+  #   runAsUser: 1000
+  #   runAsGroup: 3000
+  #   fsGroup: 2000
 
-# securityContext -- specifies security context applied to the pod
-securityContext: {}
-#   runAsUser: 1000
-#   runAsGroup: 3000
-#   fsGroup: 2000
+  # job.terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
 
-# terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
-terminationGracePeriodSeconds: 30
+configmap:
+  # configmap.enabled -- specifies whether to create ConfigMap object.
+  enabled: false
+
+  injectAsConfig:
+    # configmap.injectAsConfig.enabled -- specifies whether attach configmap to the container as config through volume or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app config file will be mounted at `/usr/share/app-config-file/`.
+    enabled: false
+
+    # configmap.injectAsConfig.keys -- list of keys as file name to be mounted
+    keys: []
+
+  # configmap.annotations -- additional annotations attached to the ConfigMap
+  annotations: {}
+
+  # configmap.labels -- additional labels attached to the ConfigMap
+  labels: {}
+
+  # configmap.data -- specifies literal data as a form of Key/Value
+  data: {}
+  #   key: VALUE
+  #   foo: bar
+
+secret:
+  # secret.enabled -- specifies whether to create Secret object.
+  enabled: false
+
+  injectAsConfig:
+    # secret.injectAsConfig.enabled -- specifies whether attach secret to the container as config file (volume) or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app secret file will be mounted at `/usr/share/app-secret-file/`.
+    enabled: false
+
+    # secret.injectAsConfig.keys -- list of keys as file name to be mounted
+    keys: []
+
+  # secret.annotations -- additional annotations attached to the Secret
+  annotations: {}
+
+  # secret.labels -- additional labels attached to the Secret
+  labels: {}
+
+  # secret.type -- the secret type. Supported values: `Opaque`, `kubernetes.io/tls`, and `kubernetes.io/dockerconfigjson`
+  type: Opaque
+
+  externalSecret:
+    # secret.externalSecret.enabled -- specifies whether to create ExternalSecret (by ExternalSecretOperator) object.
+    enabled: false
+
+    secretStoreRef:
+      # secret.externalSecret.secretStoreRef.kind -- specifies the secret store being used. It defaults to `ClusterSecretStore`.
+      kind: ClusterSecretStore
+
+      # secret.externalSecret.secretStoreRef.name -- specifies the secret store name
+      name: default
+
+    # secret.externalSecret.refreshInterval -- specifies the refresh interval which refer to an interval to rematching the value from the provider.
+    # It is a valid time units such as "ns", "ms", "s", "m", and so forth.
+    refreshInterval: 10s
+
+    # secret.externalSecret.targetCreationPolicy -- specifies how external secret treat the secret object creation.
+    targetCreationPolicy: Owner
+
+    # secret.externalSecret.remoteRefs -- specifies list of remote reference to be populated.
+    remoteRefs: []
+    #   - key: remote-key-name
+
+  # secret.data -- specifies literal data as a form of Key/Value
+  data: {}

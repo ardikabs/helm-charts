@@ -1,0 +1,22 @@
+{{- if .Values.global.serviceAccount.create }}
+{{- if .Values.global.serviceAccount.additionalRoles }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "common-app.name" . }}
+  labels: {{ include "common-app.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+rules:
+{{ toYaml .Values.global.serviceAccount.additionalRoles | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.serviceAccount.additionalClusterRoles }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common-app.name" . }}
+  labels: {{- include "common-app.labels" . | nindent 4 }}
+rules:
+{{ toYaml .Values.global.serviceAccount.additionalClusterRoles | indent 2 }}
+{{- end }}
+{{- end }}

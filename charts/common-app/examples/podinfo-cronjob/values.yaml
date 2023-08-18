@@ -1,12 +1,3 @@
-# nameOverride -- defines as a release-related resource name
-nameOverride: ""
-
-ownerReference:
-  # ownerReference.domain -- specifies the application belong to which product domain
-  domain: "common"
-  # ownerReference.team -- specifies the application belong to which team
-  team: "core"
-
 global:
   # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
   imagePullSecrets:
@@ -64,8 +55,8 @@ job:
         - mountPath: /shared
           name: shared-volume
 
-  # job.volumeMounts -- specifies mount point from list of extra volumes attached to the application
-  volumeMounts:
+  # job.extraVolumeMounts -- specifies mount point from list of extra volumes attached to the application
+  extraVolumeMounts:
     - name: shared-volume
       mountPath: /shared
 
@@ -125,80 +116,79 @@ job:
     labels:
       custom: additional-label
 
-# nodeSelector -- describes which node must be used for the pod
-nodeSelector:
-  webserver: public
+  # job.nodeSelector -- describes which node must be used for the pod
+  nodeSelector:
+    webserver: public
 
-# tolerations -- describes which toleration used for the pod to specify target node
-tolerations:
-  - operator: "Exists"
+  # job.tolerations -- describes which toleration used for the pod to specify target node
+  tolerations:
+    - operator: "Exists"
 
-# topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
-topologySpreadConstraints: []
+  # job.topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+  topologySpreadConstraints: []
 
-# affinity -- specifies pod affinity rules
-affinity:
-  # affinity.nodeAffinity -- specifies node affinity rule
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/os
-              operator: In
-              values:
-                - linux
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 1
-        preference:
-          matchExpressions:
-            - key: label-1
-              operator: In
-              values:
-                - key-1
-
-  # affinity.podAffinity -- specifies pod affinity rule
-  podAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-              - key: app
+  # job.affinity -- specifies pod affinity rules
+  affinity:
+    # job.affinity.nodeAffinity -- specifies node affinity rule
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/os
                 operator: In
                 values:
-                  - helloworld
-          topologyKey: kubernetes.io/hostname
+                  - linux
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: label-1
+                operator: In
+                values:
+                  - key-1
+    # job.affinity.podAffinity -- specifies pod affinity rule
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - helloworld
+            topologyKey: kubernetes.io/hostname
 
-# env -- pod customized environment variable injected to the application container
-env:
-  - name: EXTERNAL_ENDPOINT
-    value: "http://foo.bar"
+  # job.env -- pod customized environment variable injected to the application container
+  env:
+    - name: EXTERNAL_ENDPOINT
+      value: "http://foo.bar"
 
-# envFrom -- pod customized environment variable from selected reference to be injected to the application container
-envFrom:
-  - secretRef:
-      name: secret
-  - configMapRef:
-      name: configmap
+  # job.envFrom -- pod customized environment variable from selected reference to be injected to the application container
+  envFrom:
+    - secretRef:
+        name: secret
+    - configMapRef:
+        name: configmap
 
-# podLabels -- additional labels attached to the pods
-podLabels:
-  app.kubernetes.io/workload-type: java
+  # job.podLabels -- additional labels attached to the pods
+  podLabels:
+    app.kubernetes.io/workload-type: java
 
-# podAnnotations -- additional annotations attached to the pods
-podAnnotations:
-  prometheus.io/scrape: "false"
+  # job.podAnnotations -- additional annotations attached to the pods
+  podAnnotations:
+    prometheus.io/scrape: "false"
 
-# extraVolumes -- specifies a list of extra volumes to be attached to the pod
-extraVolumes:
-  - name: shared-volume
-    emptyDir: {}
+  # job.extraVolumes -- specifies a list of extra volumes to be attached to the pod
+  extraVolumes:
+    - name: shared-volume
+      emptyDir: {}
 
-# securityContext -- specifies security context applied to the pod
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 3000
-  fsGroup: 2000
+  # job.securityContext -- specifies security context applied to the pod
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
 
-# terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
-terminationGracePeriodSeconds: 30
+  # job.terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30

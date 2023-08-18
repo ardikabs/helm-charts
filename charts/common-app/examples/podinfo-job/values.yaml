@@ -1,0 +1,252 @@
+global:
+  # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
+  imagePullSecrets:
+    - name: github-cred
+
+  image:
+    # global.image.repository -- specifies which image container registry being used
+    repository: ghcr.io/ardikabs/etc/podinfo
+    # global.image.pullPolicy -- specifies what policy for the image pull
+    pullPolicy: IfNotPresent
+    # global.image.tag -- specifies which image container version being used
+    tag: "6.3.3"
+
+  # global.channel -- specifies application deployment channel (supported values: `stable` and `canary`)
+  channel: stable
+
+  # global.managedBy -- mark the manager of the resource, default to 'Helm'
+  managedBy: "manual"
+
+app:
+  # app.enabled -- specifies whether to create Deployment object
+  enabled: false
+
+job:
+  # job.enabled -- specifies whether to create Job object
+  enabled: true
+
+  # job.resources -- specifies resource size of the job container
+  resources:
+    limits:
+      cpu: 100m
+      memory: 90Mi
+    requests:
+      cpu: 100m
+      memory: 90Mi
+
+  # job.command -- specifies list of job's container commands
+  command:
+    - jobexec
+
+  # job.args -- specifies list of job's container args
+  args:
+    - -t
+    - generate-report
+
+  # job.initContainers -- specifies list of initContainers for the job's container
+  initContainers:
+    - name: download-kubectl
+      image: alpine:3
+      command: [sh, -c]
+      args:
+        - wget -q "https://storage.googleapis.com/kubernetes-release/release/v1.27.4/bin/linux/amd64/kubectl" -O /shared/bin/kubectl &&
+          chmod +x /shared/bin/kubectl
+      volumeMounts:
+        - mountPath: /shared
+          name: shared-volume
+
+  # job.extraVolumeMounts -- specifies mount point from list of extra volumes attached to the application
+  volumeMounts:
+    - name: shared-volume
+      mountPath: /shared
+
+  # job.activeDeadlineSeconds -- specifies the duration in seconds relative to the startTime that the job
+  #  may be continuously active before the system tries to terminate it
+  activeDeadlineSeconds: 0
+
+  # job.backoffLimit -- specifies the number of retries before marking this job failed
+  backoffLimit: 6
+
+  # job.completionMode -- completionMode specifies how Pod completions are tracked.
+  completionMode: NonIndexed
+
+  # job.completions -- specifies the desired number of successfully finished pods the job should
+  #  be run with
+  completions: 1
+
+  # job.parallelism -- specifies the maximum desired number of pods the job should run at any
+  # given time
+  parallelism: 1
+
+  # job.ttlSecondAfterFinished -- define the lifetime of a Job that has finished execution.
+  # If set, the job will be automatically deleted after Job finished (either Completed or Failed) in defined seconds.
+  ttlSecondAfterFinished: null
+
+  # job.jobAnnotations -- additional annotations attached to the Job
+  jobAnnotations:
+    custom: additional-annotation
+
+  # job.jobLabels -- additional labels attached to the Job
+  jobLabels:
+    custom: additional-label
+
+  cron:
+    # job.cron.enabled -- specifies whether to create CronJob object instead of Job
+    enabled: false
+
+  # job.nodeSelector -- describes which node must be used for the pod
+  nodeSelector:
+    webserver: public
+
+  # job.tolerations -- describes which toleration used for the pod to specify target node
+  tolerations:
+    - operator: "Exists"
+
+  # job.topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+  topologySpreadConstraints: []
+
+  # job.affinity -- specifies pod affinity rules
+  affinity:
+    # job.affinity.nodeAffinity -- specifies node affinity rule
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                  - linux
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: label-1
+                operator: In
+                values:
+                  - key-1
+    # job.affinity.podAffinity -- specifies pod affinity rule
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - helloworld
+            topologyKey: kubernetes.io/hostname
+
+  # job.env -- pod customized environment variable injected to the application container
+  env:
+    - name: EXTERNAL_ENDPOINT
+      value: "http://foo.bar"
+
+  # job.envFrom -- pod customized environment variable from selected reference to be injected to the application container
+  envFrom:
+    - secretRef:
+        name: secret
+    - configMapRef:
+        name: configmap
+
+  # job.podLabels -- additional labels attached to the pods
+  podLabels:
+    app.kubernetes.io/workload-type: java
+
+  # job.podAnnotations -- additional annotations attached to the pods
+  podAnnotations:
+    prometheus.io/scrape: "false"
+
+  # job.extraVolumes -- specifies a list of extra volumes to be attached to the pod
+  extraVolumes:
+    - name: shared-volume
+      emptyDir: {}
+
+  # job.securityContext -- specifies security context applied to the pod
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+
+  # job.terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
+
+configmap:
+  # configmap.enabled -- specifies whether to create ConfigMap object.
+  enabled: true
+
+  injectAsConfig:
+    # injectAsConfig.enabled -- specifies whether attach configmap to the container as config through volume or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app config file will be mounted at `/usr/share/app-config-file/`.
+    enabled: true
+
+    # injectAsConfig.keys -- list of keys as file name to be mounted
+    keys:
+      - application.properties
+
+  # configmap.annotations -- additional annotations attached to the ConfigMap
+  annotations:
+    custom: annotation
+
+  # configmap.labels -- additional labels attached to the ConfigMap
+  labels:
+    custom: label
+
+  # configmap.env.data -- specifies literal data within environment variable format
+  data:
+    application.properties: |-
+      logging.level.root=ERROR
+      logging.level.com.tix.member.session.aop=INFO
+      logging.level.com.tix.member.session.amqp=ERROR
+      logging.level.com.tix.member.session.outbound.impl=INFO
+      logging.level.com.tix.member.session.service.impl=INFO
+    application.env: |-
+      APP_ADDRESS=':8888'
+
+secret:
+  # secret.enabled --
+  enabled: true
+
+  injectAsConfig:
+    # injectAsConfig.enabled -- specifies whether attach secret to the container as config file (volume) or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app secret file will be mounted at `/usr/share/app-secret-file/`.
+    enabled: true
+
+    # injectAsConfig.keys -- list of keys as file name to be mounted
+    keys:
+      - secret.properties
+
+  # secret.annotations -- additional annotations attached to the Secret
+  annotations:
+    custom: annotation
+
+  # secret.labels -- additional labels attached to the Secret
+  labels:
+    custom: label
+
+  # secret.type -- the secret type. Supported values: `Opaque`, `kubernetes.io/tls`, and `kubernetes.io/dockerconfigjson`
+  type: Opaque
+
+  externalSecret:
+    # secret.externalSecret.enabled --
+    enabled: true
+
+    secretStoreRef:
+      # secret.externalSecret.secretStoreRef.kind --
+      kind: ClusterSecretStore
+
+      # secret.externalSecret.secretStoreRef.name --
+      name: default
+
+    # secret.externalSecret.refreshInterval --
+    refreshInterval: 10s
+
+    # secret.externalSecret.targetCreationPolicy --
+    targetCreationPolicy: Owner
+
+    # secret.externalSecret.remoteRefs --
+    remoteRefs:
+      - key: podinfo-secret-properties
+      - key: podinfo-dotenv

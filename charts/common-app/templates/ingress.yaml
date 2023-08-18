@@ -1,11 +1,11 @@
-{{- if and (.Values.app.service.enabled) (.Values.app.ingress.enabled) -}}
+{{- if and (.Values.app.service.enabled) (.Values.app.ingress.enabled) (eq .Values.global.channel "stable") -}}
 {{- $backendPort := "http" -}}
 {{- if hasKey .Values.app.service.ports $backendPort }}
 {{- $name := include "common-app.name" . -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $name }}-{{ .Values.global.channel }}
+  name: {{ $name }}
   labels: {{- include "common-app.labels" . | nindent 4 }}
     {{- with .Values.app.ingress.labels }}
     {{- toYaml . | nindent 4 }}
@@ -13,6 +13,7 @@ metadata:
   {{- with .Values.app.ingress.annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
+  namespace: {{ .Release.Namespace }}
 spec:
   ingressClassName: {{ .Values.app.ingress.ingressClassName }}
   rules:
@@ -23,7 +24,7 @@ spec:
             pathType: {{ .Values.app.ingress.pathType | default "Prefix" | quote }}
             backend:
               service:
-                name: {{ $name }}-{{ .Values.global.channel }}
+                name: {{ $name }}
                 port:
                   name: {{ $backendPort }}
   {{- if .Values.app.ingress.tls.enabled }}

@@ -1,48 +1,54 @@
-{{- if .Values.app.enabled }}
+{{- $root := .Values.app -}}
+{{- if $root.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  name: {{ include "common-app.name" . }}
   labels: {{- include "common-app.labels" . | nindent 4 }}
-    {{- with .Values.app.deploymentLabels }}
+    {{- with $root.deploymentLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.app.deploymentAnnotations }}
+  {{- with $root.deploymentAnnotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
+  namespace: {{ .Release.Namespace }}
 spec:
-{{- if not .Values.app.autoscaling.enabled }}
-  replicas: {{ .Values.app.replicas }}
-{{- end }}
+  {{- if not $root.autoscaling.enabled }}
+  replicas: {{ $root.replicas }}
+  {{- end }}
   strategy:
     rollingUpdate:
-      maxSurge: {{  .Values.app.rollingUpdate.maxSurge }}
-      maxUnavailable: {{ .Values.app.rollingUpdate.maxUnavailable }}
+      maxSurge: {{  $root.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $root.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
-  minReadySeconds: 0
+  minReadySeconds: {{ $root.minReadySeconds }}
   selector:
     matchLabels: {{- include "common-app.podSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-        {{- if gt (float64 .Values.podLastRestart) 0.0 }}
-        app.kubernetes.io/last-restart: {{ .Values.podLastRestart | quote }}
+        {{- if gt (float64 $root.podLastRestart) 0.0 }}
+        app.kubernetes.io/last-restart: {{ $root.podLastRestart | quote }}
         {{- end }}
-        {{- with .Values.podAnnotations }}
+        {{- with $root.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels: {{- include "common-app.labels" . | nindent 8 }}
-    spec:
-      {{- with .Values.global.imagePullSecrets }}
-      imagePullSecrets:
+        {{- with $root.podLabels }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "common-app.serviceAccountName" . }}
+      {{- if not (.Values.global.serviceAccount.create) }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- end }}
       containers:
-        - name: {{ .Release.Name }}
+        - name: main
           {{- include "common-app.appCmdArgs" . | indent 10 }}
-          image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag }}"
-          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-          {{- with .Values.app.containerPorts }}
+          {{- include "common-app.containerImage" . | nindent 10 }}
+          {{- with $root.containerPorts }}
           ports:
           {{- range $key, $value := . }}
             - name: {{ $key }}
@@ -50,41 +56,85 @@ spec:
               protocol: {{ $value.protocol }}
           {{- end }}
           {{- end }}
-          {{ if .Values.app.livenessProbe.enabled -}}
-          {{- $probe := .Values.app.livenessProbe -}}
+          {{ if $root.livenessProbe.enabled -}}
+          {{- $probe := $root.livenessProbe -}}
           {{- $_ := unset $probe "enabled" -}}
           livenessProbe: {{- $probe | toYaml | nindent 12 }}
           {{- end }}
-          {{ if .Values.app.readinessProbe.enabled -}}
-          {{- $probe := .Values.app.readinessProbe -}}
+          {{ if $root.readinessProbe.enabled -}}
+          {{- $probe := $root.readinessProbe -}}
           {{- $_ := unset $probe "enabled" -}}
           readinessProbe: {{- $probe | toYaml | nindent 12 }}
           {{ end -}}
-          resources: {{- toYaml .Values.app.resources | nindent 12 }}
-          {{- with .Values.env }}
+          resources: {{- toYaml $root.resources | nindent 12 }}
+          {{- with $root.env }}
           env: {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.envFrom }}
-          envFrom: {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.app.volumeMounts }}
-          volumeMounts: {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.nodeSelector }}
+          envFrom:
+            {{- with $root.envFrom }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if and (.Values.configmap.enabled) (not .Values.configmap.injectAsConfig.enabled) }}
+            - configMapRef:
+                name: {{ include "common-app.name" . }}
+            {{- end }}
+            {{- if and (.Values.secret.enabled) (not .Values.secret.injectAsConfig.enabled) }}
+            - secretRef:
+                name: {{ include "common-app.name" . }}
+            {{- end }}
+          volumeMounts:
+            {{- with $root.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if and (.Values.configmap.enabled) (.Values.configmap.injectAsConfig.enabled) }}
+            - name: app-config-file
+              mountPath: /usr/share/app-config-file
+            {{- end }}
+            {{- if and (.Values.secret.enabled) (.Values.secret.injectAsConfig.enabled) }}
+            - name: app-secret-file
+              mountPath: /usr/share/app-secret-file
+            {{- end }}
+      {{- with $root.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with $root.affinity }}
       affinity: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with $root.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.extraVolumes }}
-      volumes: {{- toYaml . | nindent 8 }}
+      volumes:
+        {{- with $root.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and (.Values.configmap.enabled) (.Values.configmap.injectAsConfig) }}
+        - name: app-config-file
+          configMap:
+            name: {{ include "common-app.name" . }}
+            {{- if .Values.configmap.injectAsConfig.keys }}
+            items:
+            {{- range $key := .Values.configmap.injectAsConfig.keys }}
+              key: {{ $key }}
+              path: {{ $key }}
+              mode: 0644
+            {{- end }}
+            {{- end}}
+        {{- end }}
+        {{- if and (.Values.secret.enabled) (.Values.secret.injectAsConfig) }}
+        - name: app-secret-file
+          secret:
+            secretName: {{ include "common-app.name" . }}
+            {{- if .Values.secret.injectAsConfig.keys }}
+            items:
+            {{- range $key := .Values.secret.injectAsConfig.keys }}
+              key: {{ $key }}
+              path: {{ $key }}
+              mode: 0644
+            {{- end }}
+            {{- end}}
+        {{- end }}
+      securityContext: {{- toYaml $root.securityContext | nindent 8 }}
+      {{- if $root.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $root.terminationGracePeriodSeconds }}
       {{- end }}
-      securityContext: {{- toYaml .Values.securityContext | nindent 8 }}
-      {{- if .Values.terminationGracePeriodSeconds }}
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      {{- end }}
-
 {{- end }}

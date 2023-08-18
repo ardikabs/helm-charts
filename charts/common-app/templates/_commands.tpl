@@ -1,8 +1,7 @@
 {{/*
-  Return template that should be used for command and args
-  in application Deployment
+  Return a template of container commands and args on main container
+  for application Deployment object.
 */}}
-
 {{- define "common-app.appCmdArgs" -}}
 {{- if .Values.app.command }}
 command:
@@ -15,10 +14,9 @@ args:
 {{- end -}}
 
 {{/*
-  Return template that should be used for command and args
-  in application Job
+  Return a template of container commands and args on main container
+  for Job object.
 */}}
-
 {{- define "common-app.jobCmdArgs" -}}
 {{- if .Values.job.command }}
 command:

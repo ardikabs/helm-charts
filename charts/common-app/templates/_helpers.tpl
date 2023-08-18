@@ -4,12 +4,17 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "common-app.name" -}}
-{{- if .Values.nameOverride }}
-{{- .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- define "common-app.releaseName" -}}
+{{- $releaseName := .Release.Name -}}
+{{- if hasSuffix .Values.global.channel $releaseName }}
+{{- $releaseName = (trimSuffix .Values.global.channel $releaseName | trimSuffix "-") -}}
 {{- end }}
+{{- $releaseName | trunc 53 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "common-app.name" -}}
+{{- $releaseName := (include "common-app.releaseName" .) -}}
+{{- printf "%s-%s" $releaseName .Values.global.channel | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{/*
@@ -23,25 +28,43 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "common-app.labels" -}}
-helm.sh/chart: {{ include "common-app.chart" . }}
-{{ include "common-app.podSelectorLabels" . }}
+{{- include "common-app.podSelectorLabels" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Values.global.image.tag | quote }}
 app.kubernetes.io/managed-by: {{ default .Release.Service .Values.global.managedBy }}
-{{- with .Values.podLabels }}
-{{ toYaml . }}
+app.kubernetes.io/domain: {{ .Values.labels.domain }}
+app.kubernetes.io/team: {{ .Values.labels.team }}
+helm.sh/chart: {{ include "common-app.chart" . }}
 {{- end }}
-{{- end }}
-
 
 {{/*
-Selector labels
+Pod selector labels
 */}}
 {{- define "common-app.podSelectorLabels" -}}
-app.kubernetes.io/name: {{ include "common-app.name" . }}
+app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
 {{- $validChannels := list "stable" "canary" -}}
 {{- if not (has .Values.global.channel $validChannels) }}
 {{- fail "Invalid \"global.channel\" value, should be one of the followings: \"stable\", \"canary\". Got \"{{.Values.global.channel}}\"" -}}
 {{- end }}
 app.kubernetes.io/channel: {{ .Values.global.channel }}
 {{- end }}
+
+{{/*
+  Container image
+*/}}
+{{- define "common-app.containerImage" -}}
+{{- $root := .Values.global.image -}}
+image: "{{ $root.repository }}:{{ $root.tag }}"
+imagePullPolicy: {{ $root.pullPolicy }}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "common-app.serviceAccountName" -}}
+{{- if .Values.global.serviceAccount.create -}}
+{{ default (include "common-app.name" .) .Values.global.serviceAccount.name }}
+{{- else -}}
+{{ default "default" .Values.global.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

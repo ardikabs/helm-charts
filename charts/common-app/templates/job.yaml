@@ -1,8 +1,8 @@
-{{- if and (.Values.job.enabled) (not .Values.job.cron.enabled) }}
+{{- if and (.Values.job.enabled) (not .Values.job.cron.enabled) (eq .Values.global.channel "stable") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  name: {{ include "common-app.name" . }}
   labels: {{- include "common-app.labels" . | nindent 4 }}
     {{- with .Values.job.Labels }}
     {{- toYaml . | nindent 4 }}
@@ -10,5 +10,6 @@ metadata:
   {{- with .Values.job.jobAnnotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
+  namespace: {{ .Release.Namespace }}
 spec: {{ include "common-app.jobSpec" . | nindent 2 }}
 {{- end }}

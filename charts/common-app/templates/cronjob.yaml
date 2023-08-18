@@ -1,8 +1,8 @@
-{{- if and (.Values.job.enabled) (.Values.job.cron.enabled) }}
+{{- if and (.Values.job.enabled) (.Values.job.cron.enabled) (eq .Values.global.channel "stable") }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "common-app.name" . }}-{{ .Values.global.channel }}
+  name: {{ include "common-app.name" . }}
   labels: {{- include "common-app.labels" . | nindent 4 }}
     {{- with .Values.job.cron.labels }}
     {{- toYaml . | nindent 4 }}
@@ -10,6 +10,7 @@ metadata:
   {{- with .Values.job.cron.annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
+  namespace: {{ .Release.Namespace }}
 spec:
   concurrencyPolicy: {{ .Values.job.cron.concurrencyPolicy }}
   {{- if .Values.job.cron.startingDeadlineSeconds }}

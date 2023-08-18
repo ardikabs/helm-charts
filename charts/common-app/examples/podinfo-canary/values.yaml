@@ -1,0 +1,309 @@
+global:
+  # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
+  imagePullSecrets:
+    - name: github-cred
+
+  image:
+    # global.image.repository -- specifies which image container registry being used
+    repository: ghcr.io/ardikabs/etc/podinfo
+    # global.image.pullPolicy -- specifies what policy for the image pull
+    pullPolicy: IfNotPresent
+    # global.image.tag -- specifies which image container version being used
+    tag: "6.3.3"
+
+  # global.channel -- specifies application deployment channel (supported values: `stable` and `canary`)
+  channel: canary
+
+  # global.managedBy -- mark the manager of the resource, default to 'Helm'
+  managedBy: "manual"
+
+app:
+  # app.enabled -- specifies whether to create Deployment object
+  enabled: true
+
+  # app.replicas -- specifies the default number of replica sizes, it will be ignored if app.autoscaling.enabled is true
+  replicas: 1
+
+  # app.command -- specifies application container commands
+  command:
+    - apiserver
+
+  # app.args -- specifies application container args
+  args:
+    - --loglevel warn
+    - --logoutput stdout
+
+  # app.volumeMounts -- specifies mount point from list of extra volumes attached to the application
+  volumeMounts:
+    - name: shared-volume
+      mountPath: /path/to/shared-volume
+
+  # app.containerPorts -- specifies list of application container ports
+  containerPorts:
+    http:
+      port: 9898
+      protocol: TCP
+
+  # app.deploymentLabels -- additional labels attached to the deployment
+  deploymentLabels:
+    custom: additional-label
+
+  # app.deploymentAnnotations -- additional annotations attached to the deployment
+  deploymentAnnotations:
+    custom: additional-annotation
+
+  livenessProbe:
+    # app.livenessProbe.enabled -- specifies whether pod liveness probe being created or not
+    enabled: true
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    exec:
+      command:
+        - podcli
+        - check
+        - http
+        - localhost:9898/readyz
+    # app.livenessProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
+    failureThreshold: 3
+    # app.livenessProbe.initialDelaySeconds -- Number of seconds after the container has started before liveness probes are initiated.
+    initialDelaySeconds: 10
+    # app.livenessProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
+    periodSeconds: 10
+    # app.livenessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1
+    successThreshold: 1
+    # app.livenessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
+    timeoutSeconds: 1
+
+  readinessProbe:
+    # app.readinessProbe.enabled -- specifies whether pod readiness probe being created or not
+    enabled: true
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    exec:
+      command:
+        - podcli
+        - check
+        - http
+        - localhost:9898/readyz
+    # app.readinessProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
+    failureThreshold: 3
+    # app.readinessProbe.initialDelaySeconds -- Number of seconds after the container has started before liveness probes are initiated.
+    initialDelaySeconds: 10
+    # app.readinessProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
+    periodSeconds: 10
+    # app.readinessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1
+    successThreshold: 1
+    # app.readinessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
+    timeoutSeconds: 1
+
+  service:
+    # app.service.enabled -- specifies whether to expose the application through the Kubernetes Service
+    enabled: true
+
+    # app.service.annotations -- additional annotations attached to the Service
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+
+    # app.service.labels -- additional labels attached to the Service
+    labels:
+      custom: additional-label
+
+    # app.service.type -- the Kubernetes Service's type, (supported values: `ClusterIP`, `LoadBalancer`)
+    type: ClusterIP
+
+    ports:
+      # app.service.ports.http -- the Service's named port
+      http:
+        # app.service.ports.http.port -- the Service's port, recommended to always use port 80
+        port: 80
+        # app.service.ports.http.protocol -- the Service's protocol
+        protocol: TCP
+
+  # app.rollingUpdate -- control how rolling update is performed during the deployment
+  rollingUpdate:
+    # app.rollingUpdate.maxSurge -- specifies the maximum number of Pods that can be created over the desired number of Pods.
+    maxSurge: 30%
+    # app.rollingUpdate.maxSurge -- specifies the maximum number of Pods that can be unavailable during the update process
+    maxUnavailable: 0
+
+  # app.resources -- specifies resource size of the application container
+  resources:
+    limits:
+      cpu: 100m
+      memory: 90Mi
+    requests:
+      cpu: 100m
+      memory: 90Mi
+
+  # app.nodeSelector -- describes which node must be used for the pod
+  nodeSelector:
+    webserver: public
+
+  # app.tolerations -- describes which toleration used for the pod to specify target node
+  tolerations:
+    - operator: "Exists"
+
+  # topologySpreadConstraints -- describes how a group of pods ought to spread across topology domains
+  topologySpreadConstraints: []
+
+  # app.affinity -- specifies pod affinity rules
+  affinity:
+    # app.affinity.nodeAffinity -- specifies node affinity rule
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                  - linux
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: label-1
+                operator: In
+                values:
+                  - key-1
+
+    # app.affinity.podAffinity -- specifies pod affinity rule
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - helloworld
+            topologyKey: kubernetes.io/hostname
+
+    # app.affinity.podAntiAffinity -- specifies pod anti affinity rules, weight is in the range 1-100
+    podAntiAffinity:
+      {}
+      # requiredDuringSchedulingIgnoredDuringExecution:
+      # - labelSelector:
+      #     matchExpressions:
+      #     - key: app
+      #       operator: In
+      #       values:
+      #       - helloworld
+      #   topologyKey: "kubernetes.io/hostname"
+
+  # app.env -- pod customized environment variable injected to the application container
+  env:
+    - name: HTTP_PORT
+      value: "8080"
+
+  # app.envFrom -- pod customized environment variable from selected reference to be injected to the application container
+  envFrom:
+    - secretRef:
+        name: another-secret
+    - configMapRef:
+        name: another-configmap
+
+  # app.podLabels -- additional labels attached to the pods
+  podLabels:
+    app.kubernetes.io/workload-type: java
+
+  # app.podAnnotations -- additional annotations attached to the pods
+  podAnnotations:
+    prometheus.io/port: "8888"
+    prometheus.io/scrape: "true"
+
+  # app.extraVolumes -- specifies a list of extra volumes to be attached to the pod
+  extraVolumes:
+    - name: shared-volume
+      emptyDir: {}
+
+  # app.securityContext -- specifies security context applied to the pod
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+
+  # app.terminationGracePeriodSeconds -- duration in seconds the pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
+
+configmap:
+  # configmap.enabled -- specifies whether to create ConfigMap object.
+  enabled: true
+
+  injectAsConfig:
+    # injectAsConfig.enabled -- specifies whether attach configmap to the container as config through volume or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app config file will be mounted at `/usr/share/app-config-file/`.
+    enabled: true
+
+    # injectAsConfig.keys -- list of keys as file name to be mounted
+    keys:
+      - application.properties
+
+  # configmap.annotations -- additional annotations attached to the ConfigMap
+  annotations:
+    custom: annotation
+
+  # configmap.labels -- additional labels attached to the ConfigMap
+  labels:
+    custom: label
+
+  # configmap.env.data -- specifies literal data within environment variable format
+  data:
+    application.properties: |-
+      logging.level.root=ERROR
+      logging.level.com.tix.member.session.aop=INFO
+      logging.level.com.tix.member.session.amqp=ERROR
+      logging.level.com.tix.member.session.outbound.impl=INFO
+      logging.level.com.tix.member.session.service.impl=INFO
+    application.env: |-
+      APP_ADDRESS=':8888'
+
+secret:
+  # secret.enabled --
+  enabled: true
+
+  injectAsConfig:
+    # injectAsConfig.enabled -- specifies whether attach secret to the container as config file (volume) or environment variable.
+    # It defaults to false, which mean injected as environment variable.
+    # Once enabled, the app secret file will be mounted at `/usr/share/app-secret-file/`.
+    enabled: true
+
+    # injectAsConfig.keys -- list of keys as file name to be mounted
+    keys:
+      - secret.properties
+
+  # secret.annotations -- additional annotations attached to the Secret
+  annotations:
+    custom: annotation
+
+  # secret.labels -- additional labels attached to the Secret
+  labels:
+    custom: label
+
+  # secret.type -- the secret type. Supported values: `Opaque`, `kubernetes.io/tls`, and `kubernetes.io/dockerconfigjson`
+  type: Opaque
+
+  externalSecret:
+    # secret.externalSecret.enabled --
+    enabled: true
+
+    secretStoreRef:
+      # secret.externalSecret.secretStoreRef.kind --
+      kind: ClusterSecretStore
+
+      # secret.externalSecret.secretStoreRef.name --
+      name: default
+
+    # secret.externalSecret.refreshInterval --
+    refreshInterval: 10s
+
+    # secret.externalSecret.targetCreationPolicy --
+    targetCreationPolicy: Owner
+
+    # secret.externalSecret.remoteRefs --
+    remoteRefs:
+      - key: podinfo-secret-properties
+      - key: podinfo-dotenv
