@@ -572,3 +572,5 @@ secret:
 
   # secret.data -- specifies literal data as a form of Key/Value
   data: {}
+  #   key: VALUE
+  #   foo: bar
