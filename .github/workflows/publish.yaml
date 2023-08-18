@@ -12,7 +12,6 @@ jobs:
   publish:
     permissions:
       contents: write # for helm/chart-releaser-action to push chart release and create a release
-      packages: write # to push OCI chart package to GitHub Registry
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,10 +32,6 @@ jobs:
       - name: Fetch current Chart Index
         run: |
           git checkout origin/gh-pages index.yaml
-
-      - name: Execute Chart Releaser
-        run: |
-          # Download Chart Releaser
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@be16258da8010256c6e82849661221415f031968 # v1.5.0
