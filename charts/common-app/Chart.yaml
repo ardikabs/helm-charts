@@ -3,10 +3,10 @@ name: common-app
 description: A general purposes helm chart to deploy various types of applications to Kubernetes
 home: https://github.com/ardikabs/helm-charts
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "stable"
 
 maintainers:
-  - name: Ardika Bagus
+  - name: ardikabs
     email: me@ardikabs.com
-    url: https://github.com/ardikabs
+    url: https://site.ardikabs.com
