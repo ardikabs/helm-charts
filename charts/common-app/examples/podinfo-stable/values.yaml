@@ -62,7 +62,7 @@ app:
   # app.containerPorts -- specifies list of application container ports
   containerPorts:
     http:
-      port: 9898
+      containerPort: 9898
       protocol: TCP
 
   # app.deploymentLabels -- additional labels attached to the deployment
