@@ -1,6 +1,6 @@
 # common-app
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
 
 A general purposes helm chart to deploy various types of applications to Kubernetes
 
@@ -119,7 +119,7 @@ $ helm install podinfo ardikabs/common-app
 | global.channel | string | `"none"` | specifies application deployment channel (supported values: `none`, `stable`, and `canary`) |
 | global.image.pullPolicy | string | `"IfNotPresent"` | specifies what policy for the image pull |
 | global.image.repository | string | `"img"` | specifies which image container registry being used |
-| global.image.tag | string | `"dev"` | specifies which image container version being used |
+| global.image.tag | string | `"undefined"` | specifies which image container version being used |
 | global.imagePullSecrets | list | `[]` | specifies list of image pull secrets attached to the pod |
 | global.managedBy | string | `""` | mark the manager of the resource, default to 'Helm' |
 | global.serviceAccount.additionalClusterRoles | list | `[]` | additional cluster roles specification to add to service account access |
@@ -164,6 +164,7 @@ $ helm install podinfo ardikabs/common-app
 | labels | object | `{"domain":"common","team":"core"}` | specifies a reserved labels attached to all objects used in the release |
 | labels.domain | string | `"common"` | specifies the application belong to which product domain |
 | labels.team | string | `"core"` | specifies the application belong to which team |
+| legacy.enabled | bool | `false` | specifies whether the release follows legacy deployment |
 | secret.annotations | object | `{}` | additional annotations attached to the Secret |
 | secret.data | object | `{}` | specifies literal data as a form of Key/Value |
 | secret.enabled | bool | `false` | specifies whether to create Secret object. |
