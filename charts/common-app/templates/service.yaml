@@ -48,10 +48,10 @@ spec:
   {{- end }}
   {{- end }}
   selector:
-  {{- if not .Values.legacy.enabled }}
-    app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
-  {{- else }}
+  {{- if .Values.legacy.enabled }}
     app: {{ include "common-app.name" . }}
+  {{- else }}
+    app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
   {{- end }}
 {{- end }}
 {{- end }}

@@ -24,10 +24,10 @@ spec:
   minReadySeconds: {{ $root.minReadySeconds }}
   selector:
     matchLabels:
-    {{- if not .Values.legacy.enabled }}
-      {{- include "common-app.podSelectorLabels" . | nindent 6 }}
-    {{- else }}
+    {{- if .Values.legacy.enabled }}
       app: {{ include "common-app.name" . }}
+    {{- else }}
+      {{- include "common-app.podSelectorLabels" . | nindent 6 }}
     {{- end }}
   template:
     metadata:
@@ -41,6 +41,9 @@ spec:
       labels: {{- include "common-app.labels" . | nindent 8 }}
         {{- with $root.podLabels }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.legacy.enabled }}
+        app: {{ include "common-app.name" . }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "common-app.serviceAccountName" . }}
