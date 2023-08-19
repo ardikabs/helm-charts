@@ -44,10 +44,14 @@ spec:
     - name: {{ $key }}
       port: {{ $value.port }}
       targetPort: {{ $value.targetPort | default $key }}
-      protocol: {{ $value.protocol }}
+      protocol: {{ $value.protocol | default "TCP" }}
   {{- end }}
   {{- end }}
   selector:
+  {{- if not .Values.legacy.enabled }}
     app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
+  {{- else }}
+    app: {{ include "common-app.name" . }}
+  {{- end }}
 {{- end }}
 {{- end }}

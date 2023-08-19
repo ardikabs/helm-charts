@@ -23,7 +23,12 @@ spec:
     type: RollingUpdate
   minReadySeconds: {{ $root.minReadySeconds }}
   selector:
-    matchLabels: {{- include "common-app.podSelectorLabels" . | nindent 6 }}
+    matchLabels:
+    {{- if not .Values.legacy.enabled }}
+      {{- include "common-app.podSelectorLabels" . | nindent 6 }}
+    {{- else }}
+      app: {{ include "common-app.name" . }}
+    {{- end }}
   template:
     metadata:
       annotations:

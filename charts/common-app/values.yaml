@@ -5,6 +5,10 @@ labels:
   # labels.team -- specifies the application belong to which team
   team: "core"
 
+legacy:
+  # legacy.enabled -- specifies whether the release follows legacy deployment
+  enabled: false
+
 global:
   # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
   imagePullSecrets: []
@@ -16,7 +20,7 @@ global:
     # global.image.pullPolicy -- specifies what policy for the image pull
     pullPolicy: IfNotPresent
     # global.image.tag -- specifies which image container version being used
-    tag: "dev"
+    tag: "undefined"
 
   # global.channel -- specifies application deployment channel (supported values: `none`, `stable`, and `canary`)
   channel: none
@@ -70,7 +74,7 @@ app:
   # app.containerPorts -- specifies list of application container ports
   containerPorts: {}
   #   http:
-  #     port: 8089
+  #     containerPort: 8089
   #     protocol: TCP
 
   # app.minReadySeconds --  minimum number of seconds for which a newly created pod should be ready, defaults to 0.

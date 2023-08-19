@@ -1,3 +1,6 @@
+legacy:
+  enabled: true
+
 global:
   # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
   imagePullSecrets:
