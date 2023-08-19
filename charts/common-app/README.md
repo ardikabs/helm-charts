@@ -7,9 +7,9 @@ A general purposes helm chart to deploy various types of applications to Kuberne
 ## Features
 
 * Supported use cases:
-  1. Stateless Application, including canary release deployment.
-  2. A Long-Running process, such as a Worker which intended to be functioning without being accessed.
-  3. A Cron Job or One-Time-Execution application (e.g., Job).
+  * Stateless Application, including canary release deployment.
+  * A Long-Running process, such as a Worker which intended to be functioning without being accessed.
+  * A Cron Job or One-Time-Execution application (e.g., Job).
 * Configurable CPU and Memory resource request and limit
 * Several ways for exposing application through Kubernetes `Service` and/or Kubernetes `Ingress` object.
 * Support with static replication size as well as Horizontal Pod Autoscaller (HPA).
