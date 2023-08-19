@@ -3,6 +3,22 @@ entries:
   common-app:
   - apiVersion: v2
     appVersion: stable
+    created: "2023-08-19T15:56:37.517446567Z"
+    description: A general purposes helm chart to deploy various types of applications
+      to Kubernetes
+    digest: 53880198725b18c43a41d84bab042130576d24d2c6fec68e4e802c1766601671
+    home: https://github.com/ardikabs/helm-charts
+    maintainers:
+    - email: me@ardikabs.com
+      name: ardikabs
+      url: https://site.ardikabs.com
+    name: common-app
+    type: application
+    urls:
+    - https://github.com/ardikabs/helm-charts/releases/download/common-app-0.2.0/common-app-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: stable
     created: "2023-08-18T12:12:48.138972713Z"
     description: A general purposes helm chart to deploy various types of applications
       to Kubernetes
@@ -33,4 +49,4 @@ entries:
     urls:
     - https://github.com/ardikabs/helm-charts/releases/download/common-app-0.1.0/common-app-0.1.0.tgz
     version: 0.1.0
-generated: "2023-08-18T12:12:48.138979213Z"
+generated: "2023-08-19T15:56:37.517461767Z"
