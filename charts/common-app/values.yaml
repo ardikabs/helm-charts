@@ -12,14 +12,14 @@ global:
 
   image:
     # global.image.repository -- specifies which image container registry being used
-    repository: registry.gitlab.com/idnic/kadabra-worker/web
+    repository: img
     # global.image.pullPolicy -- specifies what policy for the image pull
     pullPolicy: IfNotPresent
     # global.image.tag -- specifies which image container version being used
-    tag: ""
+    tag: "dev"
 
-  # global.channel -- specifies application deployment channel (supported values: `stable` and `canary`)
-  channel: stable
+  # global.channel -- specifies application deployment channel (supported values: `none`, `stable`, and `canary`)
+  channel: none
 
   # global.managedBy -- mark the manager of the resource, default to 'Helm'
   managedBy: ""

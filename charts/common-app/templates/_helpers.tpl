@@ -14,7 +14,11 @@ If release name contains chart name it will be used as a full name.
 
 {{- define "common-app.name" -}}
 {{- $releaseName := (include "common-app.releaseName" .) -}}
+{{- if ne .Values.global.channel "none" -}}
 {{- printf "%s-%s" $releaseName .Values.global.channel | trunc 63 | trimSuffix "-" -}}
+{{- else }}
+{{- $releaseName -}}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -42,21 +46,13 @@ Pod selector labels
 */}}
 {{- define "common-app.podSelectorLabels" -}}
 app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
-{{- $validChannels := list "stable" "canary" -}}
+{{- $validChannels := list "none" "stable" "canary" -}}
 {{- if not (has .Values.global.channel $validChannels) }}
-{{- fail "Invalid \"global.channel\" value, should be one of the followings: \"stable\", \"canary\". Got \"{{.Values.global.channel}}\"" -}}
+{{- $failmsg := printf "Invalid \"global.channel\" value, should be one of the followings: \"none\", \"stable\", or \"canary\". Got \"%s\"." .Values.global.channel -}}
+{{- fail $failmsg -}}
 {{- end }}
 app.kubernetes.io/channel: {{ .Values.global.channel }}
 {{- end }}
-
-{{/*
-  Container image
-*/}}
-{{- define "common-app.containerImage" -}}
-{{- $root := .Values.global.image -}}
-image: "{{ $root.repository }}:{{ $root.tag }}"
-imagePullPolicy: {{ $root.pullPolicy }}
-{{- end -}}
 
 {{/*
 Create the name of the service account to use
@@ -67,4 +63,13 @@ Create the name of the service account to use
 {{- else -}}
 {{ default "default" .Values.global.serviceAccount.name }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+  Container image
+*/}}
+{{- define "common-app.containerImage" -}}
+{{- $root := .Values.global.image -}}
+image: "{{ $root.repository }}:{{ $root.tag }}"
+imagePullPolicy: {{ $root.pullPolicy }}
 {{- end -}}

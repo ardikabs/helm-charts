@@ -1,6 +1,6 @@
 # common-app
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
 
 A general purposes helm chart to deploy various types of applications to Kubernetes
 
@@ -23,9 +23,10 @@ A general purposes helm chart to deploy various types of applications to Kuberne
 ## Additional Information
 
 * We highly encourage to define the `commands` and `args` for the application container explicitly. This recommendation holds true even if you plan to rely on the `CMD` or `ENTRYPOINT` instruction that you've previously specified in your Dockerfile.
-* For stateless application, this chart is designed to cater to the canary deployment model. Within this chart, we denote this model as the deployment *"channel"*. The supported channels are `stable` and `canary`. Under the `stable` channel, the release will introduce two distinct kinds of Kubernetes Services. The first type is a generic service, linked to the Pod containing the `app.kubernetes.io/name` label. The second type, suffixed with channel type, corresponds to the Kubernetes Service associated with the channel's Pod through the `app.kubernetes.io/channel` label. Conversely, in the `canary` channel, only the "channel-suffixed" Kubernetes Service is introduced.
+* For stateless application, this chart is designed to cater to the canary deployment model. Within this chart, we denote this model as the deployment *"channel"*. The supported channels are `none`, `stable`, and `canary`. Under the `stable` channel, the release will introduce two distinct kinds of Kubernetes Services. The first type is a generic service, linked to the Pod containing the `app.kubernetes.io/name` label. The second type, suffixed with channel type, corresponds to the Kubernetes Service associated with the channel's Pod through the `app.kubernetes.io/channel` label. Conversely, in the `canary` channel, only the "channel-suffixed" Kubernetes Service is introduced.
   > For instance, consider a release named `podinfo` deployed under the `stable` channel within the `foo` namespace. The release will be accessible via both `podinfo.foo.svc.cluster.local` (generic) and `podinfo-stable.foo.svc.cluster.local` (stable channel). Once the `podinfo` release also enable `canary` deployment, the access would also extend for specific channel access in this case `podinfo-canary.foo.svc.cluster.local` (canary channel). As a result, the release will have three kinds of accessible endpoint, a generic endpoint that can access both channels, a stable endpoint, and a canary endpoint.
 * Once a release deployed as canary deployment, some of feature is disabled, such as Ingress, HPA, and Pod Disruption Budget.
+* While for `none` deployment channel, it will create as it is without honoring the others deployment channel setup.
 
 **Homepage:** <https://github.com/ardikabs/helm-charts>
 
@@ -115,10 +116,10 @@ $ helm install podinfo ardikabs/common-app
 | configmap.injectAsConfig.enabled | bool | `false` | specifies whether attach configmap to the container as config through volume or environment variable. It defaults to false, which mean injected as environment variable. Once enabled, the app config file will be mounted at `/usr/share/app-config-file/`. |
 | configmap.injectAsConfig.keys | list | `[]` | list of keys as file name to be mounted |
 | configmap.labels | object | `{}` | additional labels attached to the ConfigMap |
-| global.channel | string | `"stable"` | specifies application deployment channel (supported values: `stable` and `canary`) |
+| global.channel | string | `"none"` | specifies application deployment channel (supported values: `none`, `stable`, and `canary`) |
 | global.image.pullPolicy | string | `"IfNotPresent"` | specifies what policy for the image pull |
-| global.image.repository | string | `"registry.gitlab.com/idnic/kadabra-worker/web"` | specifies which image container registry being used |
-| global.image.tag | string | `""` | specifies which image container version being used |
+| global.image.repository | string | `"img"` | specifies which image container registry being used |
+| global.image.tag | string | `"dev"` | specifies which image container version being used |
 | global.imagePullSecrets | list | `[]` | specifies list of image pull secrets attached to the pod |
 | global.managedBy | string | `""` | mark the manager of the resource, default to 'Helm' |
 | global.serviceAccount.additionalClusterRoles | list | `[]` | additional cluster roles specification to add to service account access |

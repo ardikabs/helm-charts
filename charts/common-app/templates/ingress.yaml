@@ -1,4 +1,4 @@
-{{- if and (.Values.app.service.enabled) (.Values.app.ingress.enabled) (eq .Values.global.channel "stable") -}}
+{{- if and (.Values.app.service.enabled) (.Values.app.ingress.enabled) (ne .Values.global.channel "canary") -}}
 {{- $backendPort := "http" -}}
 {{- if hasKey .Values.app.service.ports $backendPort }}
 {{- $name := include "common-app.name" . -}}

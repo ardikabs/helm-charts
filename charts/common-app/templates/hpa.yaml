@@ -1,4 +1,4 @@
-{{- if and (.Values.app.enabled) (.Values.app.autoscaling.enabled) (eq .Values.global.channel "stable") }}
+{{- if and (.Values.app.enabled) (.Values.app.autoscaling.enabled) (ne .Values.global.channel "canary") }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
