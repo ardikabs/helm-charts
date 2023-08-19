@@ -1,4 +1,4 @@
-{{- if and (.Values.job.enabled) (.Values.job.cron.enabled) (eq .Values.global.channel "stable") }}
+{{- if and (.Values.job.enabled) (.Values.job.cron.enabled) (ne .Values.global.channel "canary") }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:

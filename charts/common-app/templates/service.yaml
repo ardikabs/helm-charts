@@ -1,4 +1,5 @@
 {{- if and (.Values.app.enabled) (.Values.app.service.enabled) }}
+{{- if ne .Values.global.channel "none" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -23,8 +24,9 @@ spec:
   {{- end }}
   {{- end }}
   selector: {{- include "common-app.podSelectorLabels" . | nindent 4 }}
+{{- end }}
 ---
-{{- if eq .Values.global.channel "stable" }}
+{{- if ne .Values.global.channel "canary" }}
 apiVersion: v1
 kind: Service
 metadata:
