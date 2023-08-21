@@ -38,6 +38,7 @@ spec:
         {{- with $root.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        argocd.argoproj.io/sync-options: PruneLast=true
       labels: {{- include "common-app.labels" . | nindent 8 }}
         {{- with $root.podLabels }}
         {{- toYaml . | nindent 8 }}

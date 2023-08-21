@@ -3,7 +3,7 @@ name: common-app
 description: A general purposes helm chart to deploy various types of applications to Kubernetes
 home: https://github.com/ardikabs/helm-charts
 type: application
-version: 0.3.2
+version: 0.3.3
 appVersion: "stable"
 
 maintainers:
