@@ -119,6 +119,25 @@ app:
     # app.readinessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
     timeoutSeconds: 1
 
+  startupProbe:
+    # app.startupProbe.enabled -- specifies whether pod startup probe being created or not
+    enabled: true
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    exec:
+      command:
+        - podcli
+        - check
+        - http
+        - localhost:9898/readyz
+    # app.startupProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
+    failureThreshold: 20
+    # app.startupProbe.initialDelaySeconds -- Number of seconds after the container has started before startup probes are initiated.
+    initialDelaySeconds: 1
+    # app.startupProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
+    periodSeconds: 10
+
   service:
     # app.service.enabled -- specifies whether to expose the application through the Kubernetes Service
     enabled: true
@@ -151,6 +170,7 @@ app:
     # app.ingress.annotations -- additional annotations attached to the ingress
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: 3600s
     # app.ingress.labels -- additional labels attached to the ingress
     labels:
       custom: additional-label
@@ -165,6 +185,17 @@ app:
       enabled: true
       # app.ingress.tls.secretName -- specifies which secret for the tls on the ingress
       secretName: "podinfo-ardikabs-com-tls"
+
+    aliases:
+      - host: alias1.ardikabs.com
+        annotations: {}
+        tls:
+          secretName: alias-ardikabs-com-tls
+      - host: alias2.ardikabs.com
+        annotations:
+          nginx.ingress.kubernetes.io/proxy-read-timeout: 180s
+        tls:
+          secretName: alias2-ardikabs-com-tls
 
   # app.rollingUpdate -- control how rolling update is performed during the deployment
   rollingUpdate:

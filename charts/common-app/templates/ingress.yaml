@@ -1,37 +1,69 @@
 {{- if and (.Values.app.service.enabled) (.Values.app.ingress.enabled) (ne .Values.global.channel "canary") -}}
-{{- $backendPort := "http" -}}
-{{- if hasKey .Values.app.service.ports $backendPort }}
-{{- $name := include "common-app.name" . -}}
+{{- $root := . -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $name }}
-  labels: {{- include "common-app.labels" . | nindent 4 }}
-    {{- with .Values.app.ingress.labels }}
+  name: {{ include "common-app.name" $root }}
+  labels: {{- include "common-app.labels" $root | nindent 4 }}
+    {{- with $root.Values.app.ingress.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.app.ingress.annotations }}
+  {{- with $root.Values.app.ingress.annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $root.Release.Namespace }}
 spec:
-  ingressClassName: {{ .Values.app.ingress.ingressClassName }}
+  ingressClassName: {{ $root.Values.app.ingress.ingressClassName }}
   rules:
-    - host: {{ .Values.app.ingress.host | quote }}
-      http:
-        paths:
-          - path: {{ .Values.app.ingress.path | default "/" | quote }}
-            pathType: {{ .Values.app.ingress.pathType | default "Prefix" | quote }}
-            backend:
-              service:
-                name: {{ $name }}
-                port:
-                  name: {{ $backendPort }}
-  {{- if .Values.app.ingress.tls.enabled }}
+    - host: {{ $root.Values.app.ingress.host | quote }}
+      http: {{- include "common-app.ingresshttprule" $root | nindent 8 }}
+  {{- if $root.Values.app.ingress.tls.enabled }}
   tls:
   - hosts:
-    - {{ .Values.app.ingress.host | quote }}
-    secretName: {{ .Values.app.ingress.tls.secretName }}
+    - {{ $root.Values.app.ingress.host | quote }}
+    secretName: {{ $root.Values.app.ingress.tls.secretName }}
   {{- end }}
+
+{{- if $root.Values.app.ingress.aliases }}
+{{- range $alias := $root.Values.app.ingress.aliases }}
+{{- if kindIs "map" $alias.annotations }}
+{{- $_ := merge $alias.annotations $root.Values.app.ingress.annotations -}}
+{{- else }}
+{{- $_ := set $alias "annotations" $root.Values.app.ingress.annotations -}}
+{{- end }}
+
+{{- if not (hasKey $alias "host") }}
+  {{- fail "ingress: Alias host is being used, but 'host' is missing." -}}
+{{- end }}
+
+{{- if and ($root.Values.app.ingress.tls.enabled) (not (hasKey $alias "tls")) }}
+  {{- fail (printf "ingress(%s): When TLS is enabled for the primary host in the Ingress, it is mandatory for alias hosts to also enable TLS." $alias.host) -}}
+{{- else if (not (hasKey $alias.tls "secretName")) }}
+  {{- fail (printf "ingress(%s): Alias host TLS 'secretName' is missing." $alias.host) -}}
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "common-app.name" $root }}-{{ sha256sum $alias.host | trunc 8 }}
+  labels: {{- include "common-app.labels" $root | nindent 4 }}
+    {{- with $root.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    host: {{ $root.Values.app.ingress.host }}
+  {{- with $alias.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespace: {{ $root.Release.Namespace }}
+spec:
+  ingressClassName: {{ $root.Values.app.ingress.ingressClassName }}
+  rules:
+    - host: {{ $alias.host | quote }}
+      http: {{- include "common-app.ingresshttprule" $root | nindent 8 }}
+  tls:
+  - hosts:
+    - {{ $alias.host | quote }}
+    secretName: {{ $alias.tls.secretName }}
+{{- end }}
 {{- end }}
 {{- end }}
