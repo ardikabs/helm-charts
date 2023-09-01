@@ -48,7 +48,7 @@ Pod selector labels
 app.kubernetes.io/name: {{ include "common-app.releaseName" . }}
 {{- $validChannels := list "none" "stable" "canary" -}}
 {{- if not (has .Values.global.channel $validChannels) }}
-{{- $failmsg := printf "Invalid \"global.channel\" value, should be one of the followings: \"none\", \"stable\", or \"canary\". Got \"%s\"." .Values.global.channel -}}
+{{- $failmsg := printf "common: Invalid \"global.channel\" value, should be one of the followings: \"none\", \"stable\", or \"canary\". Got \"%s\"." .Values.global.channel -}}
 {{- fail $failmsg -}}
 {{- end }}
 app.kubernetes.io/channel: {{ .Values.global.channel }}
@@ -63,13 +63,4 @@ Create the name of the service account to use
 {{- else -}}
 {{ default "default" .Values.global.serviceAccount.name }}
 {{- end -}}
-{{- end -}}
-
-{{/*
-  Container image
-*/}}
-{{- define "common-app.containerImage" -}}
-{{- $root := .Values.global.image -}}
-image: "{{ $root.repository }}:{{ $root.tag }}"
-imagePullPolicy: {{ $root.pullPolicy }}
 {{- end -}}

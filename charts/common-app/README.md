@@ -1,6 +1,6 @@
 # common-app
 
-![Version: 0.3.3](https://img.shields.io/badge/Version-0.3.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: stable](https://img.shields.io/badge/AppVersion-stable-informational?style=flat-square)
 
 A general purposes helm chart to deploy various types of applications to Kubernetes
 
@@ -61,6 +61,7 @@ $ helm install podinfo ardikabs/common-app
 | app.envFrom | list | `[]` | pod customized environment variable from selected reference to be injected to the application container |
 | app.extraVolumeMounts | list | `[]` | specifies mount point from list of extra volumes attached to the application |
 | app.extraVolumes | list | `[]` | specifies a list of extra volumes to be attached to the pod |
+| app.ingress.aliases | list | `[]` | specifies aliases for the ingress that contains list of hosts and tls secret to each host. |
 | app.ingress.annotations | object | `{}` | additional annotations attached to the ingress |
 | app.ingress.enabled | bool | `false` | specifies whether to expose the application through the Kubernetes Ingress |
 | app.ingress.host | string | `""` | specifies the host for the ingress |
@@ -88,9 +89,9 @@ $ helm install podinfo ardikabs/common-app
 | app.podLastRestart | int | `0` | the value that intend for restarting the pod |
 | app.readinessProbe.enabled | bool | `false` | specifies whether pod readiness probe being created or not |
 | app.readinessProbe.failureThreshold | int | `3` | Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. |
-| app.readinessProbe.initialDelaySeconds | int | `10` | Number of seconds after the container has started before liveness probes are initiated. |
+| app.readinessProbe.initialDelaySeconds | int | `10` | Number of seconds after the container has started before probes are initiated. |
 | app.readinessProbe.periodSeconds | int | `10` | How often (in seconds) to perform the probe. Default to 10 seconds. |
-| app.readinessProbe.successThreshold | int | `1` | Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1 |
+| app.readinessProbe.successThreshold | int | `1` | Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. |
 | app.readinessProbe.timeoutSeconds | int | `1` | Number of seconds after which the probe times out. Defaults to 1 second. |
 | app.replicas | int | `1` | specifies the default number of replica sizes, it will be ignored if app.autoscaling.enabled is true |
 | app.resources | object | `{}` | specifies resource size of the application container |
@@ -107,6 +108,11 @@ $ helm install podinfo ardikabs/common-app
 | app.service.ports.http.protocol | string | `"TCP"` | the Service's protocol |
 | app.service.ports.http.targetPort | int | `0` | the Pod target port, it defaults to the service's named port |
 | app.service.type | string | `"ClusterIP"` | the Kubernetes Service's type, (supported values: `ClusterIP`, `LoadBalancer`) |
+| app.startupProbe.enabled | bool | `false` | specifies whether pod startup probe being created or not |
+| app.startupProbe.failureThreshold | int | `20` | Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 20. |
+| app.startupProbe.initialDelaySeconds | int | `1` | Number of seconds after the container has started before probes are initiated. |
+| app.startupProbe.periodSeconds | int | `10` | How often (in seconds) to perform the probe. Default to 1 seconds. |
+| app.startupProbe.timeoutSeconds | int | `1` | Number of seconds after which the probe times out. Defaults to 1 second. |
 | app.terminationGracePeriodSeconds | int | `30` | duration in seconds the pod needs to terminate gracefully |
 | app.tolerations | list | `[]` | describes which toleration used for the application pod to specify target node |
 | app.topologySpreadConstraints | list | `[]` | describes how a group of pods ought to spread across topology domains |

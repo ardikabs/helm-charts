@@ -123,13 +123,34 @@ app:
     #     - localhost:9898/readyz
     # app.readinessProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3.
     failureThreshold: 3
-    # app.readinessProbe.initialDelaySeconds -- Number of seconds after the container has started before liveness probes are initiated.
+    # app.readinessProbe.initialDelaySeconds -- Number of seconds after the container has started before probes are initiated.
     initialDelaySeconds: 10
     # app.readinessProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 10 seconds.
     periodSeconds: 10
-    # app.readinessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1
+    # app.readinessProbe.successThreshold -- Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1.
     successThreshold: 1
     # app.readinessProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
+    timeoutSeconds: 1
+
+  startupProbe:
+    # app.startupProbe.enabled -- specifies whether pod startup probe being created or not
+    enabled: false
+    # httpGet:
+    #   path: "/healthz"
+    #   port: 8089
+    # exec:
+    #   command:
+    #     - podcli
+    #     - check
+    #     - http
+    #     - localhost:9898/readyz
+    # app.startupProbe.failureThreshold --  Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 20.
+    failureThreshold: 20
+    # app.startupProbe.initialDelaySeconds -- Number of seconds after the container has started before probes are initiated.
+    initialDelaySeconds: 1
+    # app.startupProbe.periodSeconds -- How often (in seconds) to perform the probe. Default to 1 seconds.
+    periodSeconds: 10
+    # app.startupProbe.timeoutSeconds -- Number of seconds after which the probe times out. Defaults to 1 second.
     timeoutSeconds: 1
 
   service:
@@ -177,6 +198,13 @@ app:
       enabled: false
       # app.ingress.tls.secretName -- specifies which secret for the tls on the ingress
       secretName: ""
+
+    # app.ingress.aliases -- specifies aliases for the ingress that contains list of hosts and tls secret to each host.
+    aliases: []
+    #   - host: alias1.ardikabs.com
+    #     annotations: {}
+    #     tls:
+    #       secretName: "alias-ardikabs-com-tls"
 
   # app.rollingUpdate -- control how rolling update is performed during the deployment
   rollingUpdate:

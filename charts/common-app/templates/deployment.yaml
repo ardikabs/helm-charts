@@ -76,6 +76,11 @@ spec:
           {{- $_ := unset $probe "enabled" }}
           readinessProbe: {{- $probe | toYaml | nindent 12 }}
           {{- end }}
+          {{- if $root.startupProbe.enabled }}
+          {{- $probe := $root.startupProbe }}
+          {{- $_ := unset $probe "enabled" }}
+          startupProbe: {{- $probe | toYaml | nindent 12 }}
+          {{- end }}
           resources: {{- toYaml $root.resources | nindent 12 }}
           {{- with $root.env }}
           env: {{- toYaml . | nindent 12 }}
