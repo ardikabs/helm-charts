@@ -1,0 +1,134 @@
+should create Job:
+  1: |
+    annotations:
+      custom: additional-annotation
+    labels:
+      app.kubernetes.io/channel: stable
+      app.kubernetes.io/domain: common
+      app.kubernetes.io/instance: podinfo
+      app.kubernetes.io/managed-by: manual
+      app.kubernetes.io/name: podinfo
+      app.kubernetes.io/team: core
+      app.kubernetes.io/version: 6.3.3
+      helm.sh/chart: common-app-0.4.0
+    name: podinfo-stable
+    namespace: testing
+  2: |
+    backoffLimit: 6
+    completionMode: NonIndexed
+    completions: 1
+    parallelism: 1
+    suspend: false
+    template:
+      metadata:
+        annotations:
+          prometheus.io/scrape: "false"
+        labels:
+          app.kubernetes.io/channel: stable
+          app.kubernetes.io/domain: common
+          app.kubernetes.io/instance: podinfo
+          app.kubernetes.io/managed-by: manual
+          app.kubernetes.io/name: podinfo
+          app.kubernetes.io/team: core
+          app.kubernetes.io/version: 6.3.3
+          app.kubernetes.io/workload-type: java
+          helm.sh/chart: common-app-0.4.0
+      spec:
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - preference:
+                  matchExpressions:
+                    - key: label-1
+                      operator: In
+                      values:
+                        - key-1
+                weight: 1
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/os
+                      operator: In
+                      values:
+                        - linux
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - helloworld
+                  topologyKey: kubernetes.io/hostname
+                weight: 100
+        containers:
+          - args:
+              - -t
+              - generate-report
+            command:
+              - jobexec
+            env:
+              - name: EXTERNAL_ENDPOINT
+                value: http://foo.bar
+            envFrom:
+              - secretRef:
+                  name: secret
+              - configMapRef:
+                  name: configmap
+            image: ghcr.io/ardikabs/etc/podinfo:6.3.3
+            imagePullPolicy: IfNotPresent
+            name: main
+            resources:
+              limits:
+                cpu: 100m
+                memory: 90Mi
+              requests:
+                cpu: 100m
+                memory: 90Mi
+            volumeMounts:
+              - mountPath: /usr/share/app-config-file
+                name: app-config-file
+              - mountPath: /usr/share/app-secret-file
+                name: app-secret-file
+        imagePullSecrets:
+          - name: github-cred
+        initContainers:
+          - args:
+              - wget -q "https://storage.googleapis.com/kubernetes-release/release/v1.27.4/bin/linux/amd64/kubectl" -O /shared/bin/kubectl && chmod +x /shared/bin/kubectl
+            command:
+              - sh
+              - -c
+            image: alpine:3
+            name: download-kubectl
+            volumeMounts:
+              - mountPath: /shared
+                name: shared-volume
+        nodeSelector:
+          webserver: public
+        restartPolicy: OnFailure
+        securityContext:
+          fsGroup: 2000
+          runAsGroup: 3000
+          runAsUser: 1000
+        serviceAccountName: default
+        terminationGracePeriodSeconds: 30
+        tolerations:
+          - operator: Exists
+        volumes:
+          - emptyDir: {}
+            name: shared-volume
+          - configMap:
+              items:
+                key: application.properties
+                mode: 420
+                path: application.properties
+              name: podinfo-stable
+            name: app-config-file
+          - name: app-secret-file
+            secret:
+              items:
+                key: secret.properties
+                mode: 420
+                path: secret.properties
+              secretName: podinfo-stable

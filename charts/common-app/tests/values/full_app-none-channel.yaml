@@ -1,6 +1,3 @@
-legacy:
-  enabled: true
-
 global:
   # global.imagePullSecrets -- specifies list of image pull secrets attached to the pod
   imagePullSecrets:
@@ -185,17 +182,6 @@ app:
       enabled: true
       # app.ingress.tls.secretName -- specifies which secret for the tls on the ingress
       secretName: "podinfo-ardikabs-com-tls"
-
-    aliases:
-      - host: alias1.ardikabs.com
-        annotations: {}
-        tls:
-          secretName: alias-ardikabs-com-tls
-      - host: alias2.ardikabs.com
-        annotations:
-          nginx.ingress.kubernetes.io/proxy-read-timeout: 180s
-        tls:
-          secretName: alias2-ardikabs-com-tls
 
   # app.rollingUpdate -- control how rolling update is performed during the deployment
   rollingUpdate:

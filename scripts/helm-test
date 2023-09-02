@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -u
+set -e
+set -o pipefail
+
+find_charts() {
+    find charts -name "Chart.yaml" -type f -exec dirname {} \;
+}
+
+for chart in $(find_charts); do
+    helm unittest "$chart"
+done

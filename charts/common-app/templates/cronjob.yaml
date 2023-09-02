@@ -18,11 +18,9 @@ spec:
   {{- end }}
   schedule: {{ .Values.job.cron.schedule | quote }}
   suspend: {{ .Values.job.cron.suspend }}
-
   {{- if semverCompare ">=1.25-0" .Capabilities.KubeVersion.GitVersion }}
   timeZone: {{ .Values.job.cron.timeZone }}
-  {{ end -}}
-
+  {{- end }}
   jobTemplate:
     metadata:
       labels: {{- include "common-app.labels" . | nindent 8 }}

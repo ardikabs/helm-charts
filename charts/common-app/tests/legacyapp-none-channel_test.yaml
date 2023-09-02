@@ -1,0 +1,85 @@
+suite: legacyapp none channel test
+templates:
+  - "deployment.yaml"
+  - "service.yaml"
+  - "ingress.yaml"
+  - "hpa.yaml"
+  - "pdb.yaml"
+values:
+  - "values/full_legacyapp-none-channel.yaml"
+release:
+  name: podinfo
+  namespace: testing
+tests:
+  - it: should create Deployment
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: podinfo
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: podinfo
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "main")].image
+          value: ghcr.io/ardikabs/etc/podinfo:6.3.3
+      - matchSnapshot:
+          path: spec
+  - it: should create a Service
+    template: service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - matchRegex:
+          path: metadata.name
+          pattern: podinfo
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.selector
+          value:
+            app: podinfo
+        documentIndex: 0
+      - matchSnapshot:
+          path: spec
+  - it: should create an Ingress
+    template: ingress.yaml
+    asserts:
+      - isKind:
+          of: Ingress
+      - matchRegex:
+          path: metadata.name
+          pattern: podinfo
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - equal:
+          path: spec.rules[*].host
+          value: podinfo.ardikabs.com
+  - it: should create a HPA
+    template: hpa.yaml
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - isAPIVersion:
+          of: autoscaling/v2
+      - matchRegex:
+          path: metadata.name
+          pattern: podinfo
+      - matchSnapshot:
+          path: spec
+  - it: should create a PDB
+    template: pdb.yaml
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1
+      - matchRegex:
+          path: metadata.name
+          pattern: podinfo
+      - matchSnapshot:
+          path: spec

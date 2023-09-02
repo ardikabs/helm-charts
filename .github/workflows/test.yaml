@@ -55,3 +55,9 @@ jobs:
           else
             echo -e '\033[0;32mDocumentation up to date\033[0m ✔'
           fi
+
+      - name: Run helm-unittest
+        id: helm-unittest
+        run: |
+          helm plugin install https://github.com/helm-unittest/helm-unittest.git
+          ./scripts/helm-test

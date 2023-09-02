@@ -30,7 +30,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "common-app.releaseName" . }}
   labels: {{- include "common-app.labels" . | nindent 4 }}
   {{- with .Values.app.service.annotations }}
   annotations: {{- toYaml . | nindent 4 }}

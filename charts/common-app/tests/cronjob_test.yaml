@@ -1,0 +1,20 @@
+suite: cronjob test
+templates:
+  - "cronjob.yaml"
+values:
+  - "values/full_cronjob.yaml"
+release:
+  name: podinfo
+  namespace: testing
+tests:
+  - it: should create CronJob
+    asserts:
+      - isKind:
+          of: CronJob
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - matchSnapshot:
+          path: metadata
+      - matchSnapshot:
+          path: spec

@@ -1,0 +1,28 @@
+app:
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: 3600s
+    labels:
+      custom: additional-label
+    host: "podinfo.ardikabs.com"
+    path: "/"
+    pathType: "Prefix"
+    tls:
+      enabled: true
+      secretName: "podinfo-ardikabs-com-tls"
+
+    aliases:
+      - host: alias1.ardikabs.com
+        annotations: {}
+        tls:
+          secretName: alias-ardikabs-com-tls
+      - host: alias2.ardikabs.com
+        annotations:
+          nginx.ingress.kubernetes.io/proxy-read-timeout: 180s
+        tls:
+          secretName: alias2-ardikabs-com-tls

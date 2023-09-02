@@ -1,0 +1,52 @@
+should create an Ingress:
+  1: |
+    ingressClassName: nginx
+    rules:
+      - host: podinfo.ardikabs.com
+        http:
+          paths:
+            - backend:
+                service:
+                  name: podinfo
+                  port:
+                    name: http
+              path: /
+              pathType: Prefix
+    tls:
+      - hosts:
+          - podinfo.ardikabs.com
+        secretName: podinfo-ardikabs-com-tls
+  2: |
+    ingressClassName: nginx
+    rules:
+      - host: alias1.ardikabs.com
+        http:
+          paths:
+            - backend:
+                service:
+                  name: podinfo
+                  port:
+                    name: http
+              path: /
+              pathType: Prefix
+    tls:
+      - hosts:
+          - alias1.ardikabs.com
+        secretName: alias-ardikabs-com-tls
+  3: |
+    ingressClassName: nginx
+    rules:
+      - host: alias2.ardikabs.com
+        http:
+          paths:
+            - backend:
+                service:
+                  name: podinfo
+                  port:
+                    name: http
+              path: /
+              pathType: Prefix
+    tls:
+      - hosts:
+          - alias2.ardikabs.com
+        secretName: alias2-ardikabs-com-tls
