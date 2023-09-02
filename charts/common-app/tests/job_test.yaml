@@ -1,0 +1,23 @@
+suite: job test
+templates:
+  - "job.yaml"
+values:
+  - "values/full_job.yaml"
+release:
+  name: podinfo
+  namespace: testing
+tests:
+  - it: should create Job
+    asserts:
+      - isKind:
+          of: Job
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "main")].image
+          value: ghcr.io/ardikabs/etc/podinfo:6.3.3
+      - matchSnapshot:
+          path: metadata
+      - matchSnapshot:
+          path: spec

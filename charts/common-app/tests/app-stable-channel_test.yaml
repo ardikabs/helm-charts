@@ -1,0 +1,90 @@
+suite: app stable channel test
+templates:
+  - "deployment.yaml"
+  - "service.yaml"
+  - "ingress.yaml"
+  - "hpa.yaml"
+  - "pdb.yaml"
+values:
+  - "values/full_app-stable-channel.yaml"
+release:
+  name: podinfo-stable
+  namespace: testing
+tests:
+  - it: should create Deployment
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "main")].image
+          value: ghcr.io/ardikabs/etc/podinfo:6.3.3
+  - it: should create 2 types of Service
+    template: service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+        documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: podinfo
+        documentIndex: 1
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: podinfo
+            app.kubernetes.io/channel: stable
+        documentIndex: 0
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: podinfo
+        documentIndex: 1
+      - matchSnapshot:
+          path: spec
+  - it: should create an Ingress
+    template: ingress.yaml
+    asserts:
+      - isKind:
+          of: Ingress
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - equal:
+          path: spec.rules[*].host
+          value: podinfo.ardikabs.com
+  - it: should create a HPA
+    template: hpa.yaml
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - isAPIVersion:
+          of: autoscaling/v2
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - matchSnapshot:
+          path: spec
+  - it: should create a PDB
+    template: pdb.yaml
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1
+      - matchRegex:
+          path: metadata.name
+          pattern: -stable$
+      - matchSnapshot:
+          path: spec

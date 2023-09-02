@@ -121,6 +121,29 @@ app:
         # app.service.ports.http.protocol -- the Service's protocol
         protocol: TCP
 
+  ingress:
+    # app.ingress.enabled -- specifies whether to expose the application through the Kubernetes Ingress
+    enabled: true
+    # app.ingress.ingressClassName -- specifies an ingress class name for the ingress
+    ingressClassName: "nginx"
+    # app.ingress.annotations -- additional annotations attached to the ingress
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    # app.ingress.labels -- additional labels attached to the ingress
+    labels:
+      custom: additional-label
+    # app.ingress.host -- specifies the host for the ingress
+    host: "podinfo.ardikabs.com"
+    # app.ingress.path -- specifies which path for the ingress
+    path: "/"
+    # app.ingress.pathType -- specifies path type for the ingress
+    pathType: "Prefix"
+    tls:
+      # app.ingress.tls.enabled -- whether enable tls for the ingress
+      enabled: true
+      # app.ingress.tls.secretName -- specifies which secret for the tls on the ingress
+      secretName: "podinfo-ardikabs-com-tls"
+
   # app.rollingUpdate -- control how rolling update is performed during the deployment
   rollingUpdate:
     # app.rollingUpdate.maxSurge -- specifies the maximum number of Pods that can be created over the desired number of Pods.
@@ -136,6 +159,14 @@ app:
     requests:
       cpu: 100m
       memory: 90Mi
+
+  autoscaling:
+    # app.autoscaling.enabled -- whether to enable autoscaling (Horizontal Pod Autoscaler) or not
+    enabled: true
+
+  podDisruptionBudget:
+    # app.podDisruptionBudget.enabled -- whether to enable Pod Disruption Budget or not
+    enabled: true
 
   # app.nodeSelector -- describes which node must be used for the pod
   nodeSelector:

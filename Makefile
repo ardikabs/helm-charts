@@ -15,4 +15,4 @@ lint: ## Lint helm chart
 	@./scripts/helm-lint
 
 test: lint ## Test helm chart
-	@helm unittest . --helm3
+	@./scripts/helm-test

@@ -1,0 +1,58 @@
+suite: app canary channel test
+templates:
+  - "deployment.yaml"
+  - "service.yaml"
+  - "ingress.yaml"
+  - "hpa.yaml"
+  - "pdb.yaml"
+values:
+  - "values/full_app-canary-channel.yaml"
+release:
+  name: podinfo-canary
+  namespace: testing
+tests:
+  - it: should create Deployment
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: -canary$
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "main")].image
+          value: ghcr.io/ardikabs/etc/podinfo:6.3.3
+      - matchSnapshot:
+          path: spec
+  - it: should create a Service
+    template: service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - matchRegex:
+          path: metadata.name
+          pattern: -canary$
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: podinfo
+            app.kubernetes.io/channel: canary
+      - matchSnapshot:
+          path: spec
+  - it: should not create an Ingress
+    template: ingress.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should not create a HPA
+    template: hpa.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should not create a PDB
+    template: pdb.yaml
+    asserts:
+      - hasDocuments:
+          count: 0

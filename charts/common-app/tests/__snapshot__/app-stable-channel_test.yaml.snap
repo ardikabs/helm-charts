@@ -1,0 +1,48 @@
+should create 2 types of Service:
+  1: |
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: http
+    selector:
+      app.kubernetes.io/channel: stable
+      app.kubernetes.io/name: podinfo
+    type: ClusterIP
+  2: |
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: http
+    selector:
+      app.kubernetes.io/name: podinfo
+    type: ClusterIP
+should create a HPA:
+  1: |
+    maxReplicas: 3
+    metrics:
+      - resource:
+          name: cpu
+          target:
+            averageUtilization: 70
+            type: Utilization
+        type: Resource
+      - resource:
+          name: memory
+          target:
+            averageUtilization: 70
+            type: Utilization
+        type: Resource
+    minReplicas: 1
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: podinfo-stable
+should create a PDB:
+  1: |
+    maxUnavailable: 25%
+    selector:
+      matchLabels:
+        app.kubernetes.io/channel: stable
+        app.kubernetes.io/name: podinfo

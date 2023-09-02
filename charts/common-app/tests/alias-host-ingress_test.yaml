@@ -1,0 +1,18 @@
+suite: enable alias host ingress test
+templates:
+  - "ingress.yaml"
+values:
+  - "values/alias-host-ingress.yaml"
+release:
+  name: podinfo
+  namespace: testing
+tests:
+  - it: should create an Ingress
+    template: ingress.yaml
+    asserts:
+      - isKind:
+          of: Ingress
+      - hasDocuments:
+          count: 3
+      - matchSnapshot:
+          path: spec

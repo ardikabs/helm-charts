@@ -1,0 +1,174 @@
+should create Deployment:
+  1: |
+    minReadySeconds: 0
+    selector:
+      matchLabels:
+        app: podinfo
+    strategy:
+      rollingUpdate:
+        maxSurge: 30%
+        maxUnavailable: 0
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          argocd.argoproj.io/sync-options: PruneLast=true
+          prometheus.io/port: "8888"
+          prometheus.io/scrape: "true"
+        labels:
+          app: podinfo
+          app.kubernetes.io/channel: none
+          app.kubernetes.io/domain: common
+          app.kubernetes.io/instance: podinfo
+          app.kubernetes.io/managed-by: manual
+          app.kubernetes.io/name: podinfo
+          app.kubernetes.io/team: core
+          app.kubernetes.io/version: 6.3.3
+          app.kubernetes.io/workload-type: java
+          helm.sh/chart: common-app-0.4.1
+      spec:
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - preference:
+                  matchExpressions:
+                    - key: label-1
+                      operator: In
+                      values:
+                        - key-1
+                weight: 1
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/os
+                      operator: In
+                      values:
+                        - linux
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - helloworld
+                  topologyKey: kubernetes.io/hostname
+                weight: 100
+          podAntiAffinity: {}
+        containers:
+          - args:
+              - --loglevel warn
+              - --logoutput stdout
+            command:
+              - apiserver
+            env:
+              - name: HTTP_PORT
+                value: "8080"
+            envFrom:
+              - secretRef:
+                  name: secret
+              - configMapRef:
+                  name: configmap
+            image: ghcr.io/ardikabs/etc/podinfo:6.3.3
+            imagePullPolicy: IfNotPresent
+            livenessProbe:
+              exec:
+                command:
+                  - podcli
+                  - check
+                  - http
+                  - localhost:9898/readyz
+              failureThreshold: 3
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 1
+            name: main
+            ports:
+              - containerPort: 9898
+                name: http
+                protocol: TCP
+            readinessProbe:
+              exec:
+                command:
+                  - podcli
+                  - check
+                  - http
+                  - localhost:9898/readyz
+              failureThreshold: 3
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 1
+            resources:
+              limits:
+                cpu: 100m
+                memory: 90Mi
+              requests:
+                cpu: 100m
+                memory: 90Mi
+            startupProbe:
+              exec:
+                command:
+                  - podcli
+                  - check
+                  - http
+                  - localhost:9898/readyz
+              failureThreshold: 20
+              initialDelaySeconds: 1
+              periodSeconds: 10
+              timeoutSeconds: 1
+            volumeMounts:
+              - mountPath: /path/to/shared-volume
+                name: shared-volume
+        nodeSelector:
+          webserver: public
+        securityContext:
+          fsGroup: 2000
+          runAsGroup: 3000
+          runAsUser: 1000
+        serviceAccountName: podinfo
+        terminationGracePeriodSeconds: 30
+        tolerations:
+          - operator: Exists
+        volumes:
+          - emptyDir: {}
+            name: shared-volume
+should create a HPA:
+  1: |
+    maxReplicas: 3
+    metrics:
+      - resource:
+          name: cpu
+          target:
+            averageUtilization: 70
+            type: Utilization
+        type: Resource
+      - resource:
+          name: memory
+          target:
+            averageUtilization: 70
+            type: Utilization
+        type: Resource
+    minReplicas: 1
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: podinfo
+should create a PDB:
+  1: |
+    maxUnavailable: 25%
+    selector:
+      matchLabels:
+        app: podinfo
+should create a Service:
+  1: |
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: http
+    selector:
+      app: podinfo
+    type: ClusterIP
