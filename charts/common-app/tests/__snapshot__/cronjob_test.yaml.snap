@@ -11,7 +11,7 @@ should create CronJob:
       app.kubernetes.io/team: core
       app.kubernetes.io/version: 6.3.3
       custom: additional-label
-      helm.sh/chart: common-app-0.4.0
+      helm.sh/chart: common-app-0.4.1
     name: podinfo-stable
     namespace: testing
   2: |
@@ -26,7 +26,7 @@ should create CronJob:
           app.kubernetes.io/name: podinfo
           app.kubernetes.io/team: core
           app.kubernetes.io/version: 6.3.3
-          helm.sh/chart: common-app-0.4.0
+          helm.sh/chart: common-app-0.4.1
       spec:
         backoffLimit: 6
         completionMode: NonIndexed
@@ -46,7 +46,7 @@ should create CronJob:
               app.kubernetes.io/team: core
               app.kubernetes.io/version: 6.3.3
               app.kubernetes.io/workload-type: java
-              helm.sh/chart: common-app-0.4.0
+              helm.sh/chart: common-app-0.4.1
           spec:
             affinity:
               nodeAffinity:
